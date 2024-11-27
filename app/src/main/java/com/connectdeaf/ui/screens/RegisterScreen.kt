@@ -161,7 +161,7 @@ fun ClientInputFields(
     OutlinedTextField(
         value = uiState.email,
         onValueChange = { newEmail ->
-            onEmailChange(newEmail) // Chama a função de atualização
+            onEmailChange(newEmail) // Chama função de atualização
         },
         label = { Text("Email") },
         shape = RoundedCornerShape(15.dp),
