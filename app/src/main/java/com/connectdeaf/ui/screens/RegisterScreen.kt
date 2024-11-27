@@ -83,7 +83,7 @@ fun RegisterScreen(
             OutlinedButton(
                 onClick = onClick,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = uiState.isInputValid, // Habilita o botão apenas se os campos estiverem preenchidos
+                enabled = uiState.isInputValid,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (uiState.isInputValid) Color.White else Color(0xFF999999),
                     contentColor = if (uiState.isInputValid) Color(0xFF478FCC) else Color.White
