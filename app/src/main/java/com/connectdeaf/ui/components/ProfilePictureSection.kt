@@ -48,7 +48,7 @@ fun ProfilePictureSection(
 
                 .drawBehind {
                     val dashWidth = 6.dp.toPx() // tamanho do traço
-                    val dashGap = 4.dp.toPx() // espaço entre os traços
+                    val dashGap = 4.dp.toPx() // espaço entre os traçoss
                     val paint = android.graphics
                         .Paint()
                         .apply {
