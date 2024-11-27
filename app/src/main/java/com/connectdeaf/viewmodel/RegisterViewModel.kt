@@ -26,7 +26,7 @@ class RegisterViewModel : ViewModel() {
     }
 
     fun onEmailChange(newEmail: String) {
-        val isValid = isValidEmail(newEmail)  // Valida o email
+        val isValid = isValidEmail(newEmail)  // Valida email
         _uiState.update { it.copy(email = newEmail, isEmailValid = isValid) }
     }
 
