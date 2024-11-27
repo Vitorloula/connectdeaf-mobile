@@ -7,7 +7,7 @@ import androidx.compose.ui.text.input.TransformedText
 
 class PhoneVisualTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
-        // Limita entrada a no máximo 11 dígitos
+        // entrada no máximo 11 dígitos
         val rawText = text.text.filter { it.isDigit() }.take(11)
 
         val formattedText = buildString {
