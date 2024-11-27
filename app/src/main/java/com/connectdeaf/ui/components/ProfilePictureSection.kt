@@ -83,6 +83,7 @@ fun ProfilePictureSection(
             border = BorderStroke(0.dp, Color.Transparent) // Remover a borda padrão
         ) {
             Text("Adicionar Foto De Perfil")
+
         }
 
     }
