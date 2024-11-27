@@ -11,7 +11,7 @@ data class RegisterUiState(
     val email: String = "",
     val phone: String = "",
     val password: String = "",
-    val isEmailValid: Boolean = true  // Adiciona um campo para validação do email
+    val isEmailValid: Boolean = true  // validação do email
 ) {
     val isInputValid: Boolean
         get() = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && password.isNotBlank()
