@@ -29,7 +29,7 @@ fun TopAppBar() {
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { /* ação */ }) {
+                IconButton(onClick = { /* ação teste */ }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Voltar",
