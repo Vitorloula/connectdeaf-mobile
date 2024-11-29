@@ -47,7 +47,11 @@ fun MenuScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = {
-                            navController.popBackStack()
+                            if (
+                                navController.previousBackStackEntry != null
+                                ) {
+                                navController.popBackStack()
+                                }
                         }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
