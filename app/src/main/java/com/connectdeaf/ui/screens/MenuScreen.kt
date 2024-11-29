@@ -39,7 +39,6 @@ fun MenuScreen(
 ) {
     Scaffold(
         topBar = {
-            // Colocando a TopAppBar dentro do Scaffold
             TopAppBar(
                 title = {
                     Row(
@@ -74,20 +73,18 @@ fun MenuScreen(
             )
         },
         content = { paddingValues ->
-            // Conteúdo da tela, ajustado pelo padding do Scaffold
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color(0xFF478FCC))
-                    .padding(paddingValues), // Ajuste para não sobrepor a topBar
+                    .padding(paddingValues),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start
             ) {
-                // Exemplo de itens de menu
-                MenuItem(icon = Icons.Default.Home, text = "Home", onClick = { /* Ação */ })
-                MenuItem(icon = Icons.Default.DateRange, text = "Agendamentos", onClick = { /* Ação */ })
-                MenuItem(icon = Icons.Default.Phone, text = "Serviços", onClick = { /* Ação */ })
-                MenuItem(icon = Icons.Default.Person, text = "Perfil", onClick = { /* Ação */ })
+                MenuItem(icon = Icons.Default.Home, text = "Home", onClick = {  })
+                MenuItem(icon = Icons.Default.DateRange, text = "Agendamentos", onClick = {  })
+                MenuItem(icon = Icons.Default.Phone, text = "Serviços", onClick = {  })
+                MenuItem(icon = Icons.Default.Person, text = "Perfil", onClick = {  })
             }
         }
     )
