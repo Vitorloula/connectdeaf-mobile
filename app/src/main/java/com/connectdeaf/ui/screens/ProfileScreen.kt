@@ -50,7 +50,7 @@ fun ProfileScreen(
             .background(MaterialTheme.colorScheme.background),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Título "Perfil do profissional" centralizado
+        // Título "Perfil do profissional"
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
@@ -65,7 +65,7 @@ fun ProfileScreen(
         // Header (Avatar + Name + Location)
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(4.dp), // Bordas arredondadas mais pronunciadas
+            shape = RoundedCornerShape(4.dp),
             elevation = CardDefaults.cardElevation(4.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
@@ -141,7 +141,6 @@ fun ProfileScreen(
                     var currentRowItems = mutableListOf<String>()
                     profile.category.forEachIndexed { index, skill ->
                         currentRowItems.add(skill)
-                        // Quebra para criar uma nova linha após 3 itens ou no último item
                         if (currentRowItems.size == 3 || index == profile.category.lastIndex) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -179,7 +178,7 @@ fun ProfileScreen(
             Row(
                 modifier = Modifier
                     .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(12.dp) // Espaçamento entre os itens
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 profile.services.forEach { service ->
                     ServiceCard(
@@ -213,7 +212,7 @@ fun ProfileScreen(
                 Row(
                     modifier = Modifier
                         .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp) // Espaçamento entre os itens
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ){
                     profile.assessments.forEach { assessment ->
                         AssessmentCard(

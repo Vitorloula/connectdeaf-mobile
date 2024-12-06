@@ -26,9 +26,9 @@ fun AssessmentCard(
     Card(
         modifier = Modifier
             .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp), // Borda arredondada mais suave
-        colors = CardDefaults.cardColors(containerColor = Color.White), // Fundo branco
-        elevation = CardDefaults.cardElevation(4.dp) // Sombra para o cartão
+        shape = RoundedCornerShape(4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
             modifier = Modifier
@@ -44,7 +44,7 @@ fun AssessmentCard(
                 Box(
                     modifier = Modifier
                         .size(40.dp)
-                        .background(Color.Gray, CircleShape), // Placeholder para o ícone do usuário
+                        .background(Color.Gray, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
