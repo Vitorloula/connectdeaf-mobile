@@ -2,16 +2,14 @@ package com.connectdeaf.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,41 +25,42 @@ import com.connectdeaf.R
 fun TopAppBar(
     navController: NavController? = null,
 ) {
-    TopAppBar(
+    CenterAlignedTopAppBar(
         title = {
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = {
-                    navController?.navigate("Notifications") {
-                        launchSingleTop = true
-                    }
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = "Notificação",
-                        tint = Color.White
-                    )
-                }
-                Spacer(modifier = Modifier.weight(0.5f))
                 Image(
                     painter = painterResource(id = R.drawable.logo_horizontal),
                     contentDescription = "Logo Horizontal",
                     modifier = Modifier.size(166.dp)
                 )
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = {
-                    navController?.navigate("Menu") {
-                        launchSingleTop = true
-                    }
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = "Menu",
-                        tint = Color.White
-                    )
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = {
+                navController?.navigate("Notifications") {
+                    launchSingleTop = true
                 }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notificação",
+                    tint = Color.White
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = {
+                navController?.navigate("Menu") {
+                    launchSingleTop = true
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu",
+                    tint = Color.White
+                )
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
