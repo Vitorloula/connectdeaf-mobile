@@ -67,7 +67,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
             elevation = CardDefaults.cardElevation(4.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -78,7 +78,7 @@ fun ProfileScreen(
                     model = profile.imageUrl,
                     contentDescription = "Profile Picture",
                     modifier = Modifier
-                        .size(80.dp) // Aumentando o tamanho da imagem
+                        .size(80.dp)
                         .clip(CircleShape)
                         .background(Color.Gray)
                 )
@@ -233,7 +233,7 @@ fun SectionCard(title: String, content: @Composable () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
         Column(modifier = Modifier.padding(16.dp)
         ) {
