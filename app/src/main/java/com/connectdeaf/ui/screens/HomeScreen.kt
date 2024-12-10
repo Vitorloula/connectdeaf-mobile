@@ -147,5 +147,5 @@ fun Chip(text: String) {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(onSearch = {})
+    HomeScreen()
 }
