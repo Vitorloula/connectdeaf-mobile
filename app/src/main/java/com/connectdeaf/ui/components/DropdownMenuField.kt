@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +39,12 @@ fun DropdownMenuField(
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 },
+                colors = androidx.compose.material3.TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color(0xFF999999),
+                    unfocusedIndicatorColor = Color(0xFF999999),
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                ),
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth()
