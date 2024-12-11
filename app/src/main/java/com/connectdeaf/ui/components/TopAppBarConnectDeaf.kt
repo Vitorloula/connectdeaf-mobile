@@ -25,7 +25,8 @@ import com.connectdeaf.R
 @Composable
 fun TopAppBar(
     navController: NavController? = null,
-    showBackButton: Boolean = false
+    onOpenDrawerNotifications: () -> Unit,
+    onOpenDrawerMenu: () -> Unit
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -40,48 +41,32 @@ fun TopAppBar(
             }
         },
         navigationIcon = {
-            if (showBackButton) {
 
-                IconButton(onClick = { navController?.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Voltar",
-                        tint = Color.White
-                    )
-                }
-            } else {
 
-                IconButton(onClick = {
-                    navController?.navigate("Notifications") {
-                        launchSingleTop = true
-                    }
-                }) {
+                IconButton(onClick =
+                    onOpenDrawerNotifications
+                ) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notificação",
                         tint = Color.White
                     )
                 }
-            }
         },
         actions = {
 
-            if (!showBackButton) {
-                IconButton(onClick = {
-                    navController?.navigate("Menu") {
-                        launchSingleTop = true
-                    }
-                }) {
+                IconButton(onClick =
+                    onOpenDrawerMenu
+                ) {
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Menu",
                         tint = Color.White
                     )
                 }
-            }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0XFF478FCC)
+            containerColor = Color(0XFF3D66CC)
         )
     )
 }
