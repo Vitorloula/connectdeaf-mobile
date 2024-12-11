@@ -37,7 +37,7 @@ fun HomeScreen() {
 
     Scaffold(
         topBar = {
-            com.connectdeaf.ui.components.TopAppBar()
+            com.connectdeaf.ui.components.TopAppBar(navController = null, showBackButton = false)
         }
     ) { paddingValues ->
         Column(
@@ -125,14 +125,14 @@ fun TagsSection(tags: List<String>) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             tags.forEach { tag ->
-                Chip(tag)
+                HomeChip(tag)
             }
         }
     }
 }
 
 @Composable
-fun Chip(text: String) {
+fun HomeChip(text: String) {
     ElevatedAssistChip(
         onClick = { /* TODO: Tag Action */ },
         shape = RoundedCornerShape(16.dp),
