@@ -148,6 +148,8 @@ fun ClientInputFields(
         onValueChange = onNameChange,
         label = AppStrings.NAME
     )
+    
+    Spacer(modifier = Modifier.height(14.dp))
 
     GenericInputField(
         value = uiState.email,
@@ -165,6 +167,8 @@ fun ClientInputFields(
         keyboardType = KeyboardType.Phone,
         visualTransformation = PhoneVisualTransformation()
     )
+    
+    Spacer(modifier = Modifier.height(14.dp))
 
     GenericInputField(
         value = uiState.password,
