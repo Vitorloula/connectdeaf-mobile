@@ -35,11 +35,7 @@ fun HomeScreen() {
 
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
-    Scaffold(
-        topBar = {
-            com.connectdeaf.ui.components.TopAppBar(navController = null, showBackButton = false)
-        }
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
