@@ -28,6 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.connectdeaf.ui.theme.GreyLighter
+import com.connectdeaf.ui.theme.PrimaryColor
 import com.connectdeaf.viewmodel.AddressUiState
 import com.connectdeaf.viewmodel.AddressViewModel
 
@@ -74,8 +76,8 @@ fun AddressScreen(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 enabled = uiState.isInputValid,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (uiState.isInputValid) Color(0xFF478FCC) else Color(0xFF999999),
-                    contentColor = if (uiState.isInputValid) Color.White else Color(0xFF478FCC)
+                    containerColor = if (uiState.isInputValid) PrimaryColor else GreyLighter,
+                    contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(6.dp),
             ) {
