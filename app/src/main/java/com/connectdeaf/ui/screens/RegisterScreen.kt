@@ -42,14 +42,7 @@ fun RegisterScreen(
     val uiState by registerViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            com.connectdeaf.ui.components.TopAppBar(
-                navController = null,
-                showBackButton = true
-            )
-        },
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
