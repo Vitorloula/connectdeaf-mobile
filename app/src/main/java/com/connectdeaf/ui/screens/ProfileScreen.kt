@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.*
@@ -24,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.connectdeaf.R
 import com.connectdeaf.ui.components.AssessmentCard
+import com.connectdeaf.ui.components.ChipComponent
 import com.connectdeaf.ui.components.ServiceCard
 import com.connectdeaf.ui.theme.ConnectDeafTheme
 import com.connectdeaf.viewmodel.Assessment
@@ -137,7 +137,6 @@ fun ProfileScreen(
                         text = "Minhas habilidades",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
                     var currentRowItems = mutableListOf<String>()
                     profile.category.forEachIndexed { index, skill ->
                         currentRowItems.add(skill)
@@ -147,7 +146,7 @@ fun ProfileScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 currentRowItems.forEach { chipSkill ->
-                                    Chip(text = chipSkill)
+                                    ChipComponent(text = chipSkill)
                                 }
                             }
                             currentRowItems = mutableListOf()
@@ -243,21 +242,6 @@ fun SectionCard(title: String, content: @Composable () -> Unit) {
             )
             content()
         }
-    }
-}
-
-@Composable
-fun Chip(text: String) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = colorResource(id = R.color.white),
-        modifier = Modifier.padding(4.dp)
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-        )
     }
 }
 
