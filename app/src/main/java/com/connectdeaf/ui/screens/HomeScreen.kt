@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.connectdeaf.R
+import com.connectdeaf.ui.components.ChipComponent
 import com.connectdeaf.ui.components.SearchBarField
 import com.connectdeaf.ui.theme.PrimaryColor
 import com.connectdeaf.ui.theme.TextColorPrimary
@@ -125,23 +126,10 @@ fun TagsSection(tags: List<String>) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             tags.forEach { tag ->
-                HomeChip(tag)
+                ChipComponent(tag)
             }
         }
     }
-}
-
-@Composable
-fun HomeChip(text: String) {
-    ElevatedAssistChip(
-        onClick = { /* TODO: Tag Action */ },
-        shape = RoundedCornerShape(16.dp),
-        label = { Text(text = text, style = TextStyle(fontSize = 14.sp)) },
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = Color(0xFFE2E8F7),
-            labelColor = TextColorPrimary
-        )
-    )
 }
 
 @Preview(showBackground = true)
