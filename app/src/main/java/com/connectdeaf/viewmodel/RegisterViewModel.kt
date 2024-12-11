@@ -1,5 +1,6 @@
 package com.connectdeaf.viewmodel
 
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,11 +12,16 @@ data class RegisterUiState(
     val email: String = "",
     val phone: String = "",
     val password: String = "",
-    val isEmailValid: Boolean = true  // validação do email
+    val isEmailValid: Boolean = true,
+    val isPhoneValid: Boolean = true
 ) {
-    val isInputValid: Boolean
+    private val isInputValid: Boolean
         get() = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && password.isNotBlank()
+
+    val isFormValid: Boolean
+        get() = isInputValid && isEmailValid && isPhoneValid
 }
+
 
 class RegisterViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -26,12 +32,13 @@ class RegisterViewModel : ViewModel() {
     }
 
     fun onEmailChange(newEmail: String) {
-        val isValid = isValidEmail(newEmail)  // Valida email
+        val isValid = isValidEmail(newEmail)
         _uiState.update { it.copy(email = newEmail, isEmailValid = isValid) }
     }
 
     fun onPhoneChange(newPhone: String) {
-        _uiState.update { it.copy(phone = newPhone) }
+        val isValid = isValidPhone(newPhone)
+        _uiState.update { it.copy(phone = newPhone, isPhoneValid = isValid) }
     }
 
     fun onPasswordChange(newPassword: String) {
@@ -39,6 +46,11 @@ class RegisterViewModel : ViewModel() {
     }
 
     private fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    private fun isValidPhone(phone: String): Boolean {
+        val phoneRegex = "^[0-9]{10,11}$".toRegex()
+        return phone.matches(phoneRegex)
     }
 }
