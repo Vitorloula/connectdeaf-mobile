@@ -25,7 +25,9 @@ import com.connectdeaf.R
 @Composable
 fun TopAppBar(
     navController: NavController? = null,
-    showBackButton: Boolean = false
+    onOpenDrawerNotifications: () -> Unit,
+    onOpenDrawerMenu: () -> Unit,
+    showBackButton: Boolean
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -40,8 +42,8 @@ fun TopAppBar(
             }
         },
         navigationIcon = {
-            if (showBackButton) {
 
+            if (showBackButton) {
                 IconButton(onClick = { navController?.popBackStack() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -51,11 +53,10 @@ fun TopAppBar(
                 }
             } else {
 
-                IconButton(onClick = {
-                    navController?.navigate("Notifications") {
-                        launchSingleTop = true
-                    }
-                }) {
+                IconButton(
+                    onClick =
+                    onOpenDrawerNotifications
+                ) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notificação",
@@ -67,11 +68,10 @@ fun TopAppBar(
         actions = {
 
             if (!showBackButton) {
-                IconButton(onClick = {
-                    navController?.navigate("Menu") {
-                        launchSingleTop = true
-                    }
-                }) {
+                IconButton(
+                    onClick =
+                    onOpenDrawerMenu
+                ) {
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Menu",
@@ -81,7 +81,7 @@ fun TopAppBar(
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0XFF478FCC)
+            containerColor = Color(0XFF3D66CC)
         )
     )
 }
