@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
@@ -31,8 +30,7 @@ import com.connectdeaf.ui.components.GenericInputField
 import com.connectdeaf.ui.theme.AppStrings
 import com.connectdeaf.utils.PhoneVisualTransformation
 import com.connectdeaf.viewmodel.uistate.RegisterUiState
-
-// Arquivo novo e atualizado
+import com.connectdeaf.ui.components.HeaderSection
 
 @Composable
 fun RegisterScreen(
@@ -118,24 +116,6 @@ fun RegisterScreen(
 }
 
 @Composable
-fun HeaderSection() {
-    Text(
-        text = "Cadastro",
-        fontSize = 20.sp,
-        fontFamily = FontFamily.SansSerif,
-        color = Color.Black,
-        modifier = Modifier.padding(6.dp)
-    )
-    Text(
-        text = "Me fala mais sobre você, cliente!",
-        fontSize = 16.sp,
-        fontFamily = FontFamily.SansSerif,
-        color = Color.Black,
-        modifier = Modifier.padding(8.dp)
-    )
-}
-
-@Composable
 fun ClientInputFields(
     uiState: RegisterUiState,
     onNameChange: (String) -> Unit,
@@ -150,8 +130,6 @@ fun ClientInputFields(
         onValueChange = onNameChange,
         label = AppStrings.NAME
     )
-    
-    Spacer(modifier = Modifier.height(14.dp))
 
     GenericInputField(
         value = uiState.email,
@@ -169,8 +147,6 @@ fun ClientInputFields(
         keyboardType = KeyboardType.Phone,
         visualTransformation = PhoneVisualTransformation()
     )
-    
-    Spacer(modifier = Modifier.height(14.dp))
 
     GenericInputField(
         value = uiState.password,
