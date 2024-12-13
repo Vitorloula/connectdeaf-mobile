@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HeaderSection(isProfessional : Boolean = false) {
+fun HeaderSectionRegister(isProfessional : Boolean = false) {
     Text(
         text = "Cadastro",
         fontSize = 20.sp,

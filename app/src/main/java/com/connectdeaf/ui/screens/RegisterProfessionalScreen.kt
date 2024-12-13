@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.connectdeaf.R
 import com.connectdeaf.ui.components.GenericInputField
-import com.connectdeaf.ui.components.HeaderSection
+import com.connectdeaf.ui.components.HeaderSectionRegister
 import com.connectdeaf.ui.components.ProfilePictureSection
 import com.connectdeaf.ui.theme.AppStrings
 import com.connectdeaf.utils.PhoneVisualTransformation
@@ -65,7 +65,7 @@ fun RegisterProfessionalScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            HeaderSection(isProfessional = true)
+            HeaderSectionRegister(isProfessional = true)
             ProfilePictureSection(
                 onClick = onClick,
                 imageResourceId = R.drawable.ic_launcher_background

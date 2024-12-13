@@ -30,7 +30,8 @@ import com.connectdeaf.ui.components.GenericInputField
 import com.connectdeaf.ui.theme.AppStrings
 import com.connectdeaf.utils.PhoneVisualTransformation
 import com.connectdeaf.viewmodel.uistate.RegisterUiState
-import com.connectdeaf.ui.components.HeaderSection
+import com.connectdeaf.ui.components.HeaderSectionRegister
+import com.connectdeaf.ui.components.ProfilePictureSection
 
 @Composable
 fun RegisterScreen(
@@ -56,8 +57,8 @@ fun RegisterScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            HeaderSection()
-            com.connectdeaf.ui.components.ProfilePictureSection(
+            HeaderSectionRegister(isProfessional = false)
+            ProfilePictureSection(
                 onClick = onClick,
                 imageResourceId = R.drawable.ic_launcher_background
             )
