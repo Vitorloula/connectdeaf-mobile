@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.connectdeaf.R
+import com.connectdeaf.ui.components.DropdownMenuField
 import com.connectdeaf.ui.components.GenericInputField
 import com.connectdeaf.ui.components.HeaderSectionRegister
 import com.connectdeaf.ui.components.ProfilePictureSection
@@ -178,16 +179,12 @@ fun ProfessionalInputFields(
         keyboardType = KeyboardType.Text
     )
 
-    GenericInputField(
+    DropdownMenuField(
         value = uiState.selectedQualifications,
-        onValueChange = onQualificationChange,
         label = AppStrings.QUALIFICATION,
-        keyboardType = KeyboardType.Text,
-        isDropdown = true,
-        dropdownOptions = uiState.qualifications,
-        onDropdownSelect = { selectQualification ->
-            onQualificationChange(selectQualification)
-        }
+        onValueChange = onQualificationChange,
+        options = uiState.qualifications,
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
