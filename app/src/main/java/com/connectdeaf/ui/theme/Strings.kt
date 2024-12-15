@@ -8,4 +8,6 @@ object AppStrings {
     const val INVALID_EMAIL = "Email inválido"
     const val AREA_ATUACAO = "Área de atuação"
     const val QUALIFICATION = "Qualificação"
+    const val CIDADE = "Cidade"
+    const val ESTADO = "Estado"
 }
