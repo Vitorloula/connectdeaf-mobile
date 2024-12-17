@@ -2,7 +2,6 @@ package com.connectdeaf.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -26,12 +26,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.connectdeaf.R
+import com.connectdeaf.ui.components.ChipComponent
 import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.components.SearchBarField
 import com.connectdeaf.ui.theme.PrimaryColor
-import com.connectdeaf.ui.theme.TextColorPrimary
 import kotlinx.coroutines.launch
 
 
@@ -55,7 +54,7 @@ fun HomeScreen( navController: NavHostController) {
                 com.connectdeaf.ui.components.TopAppBar(
                     onOpenDrawerMenu = { scope.launch { drawerStateMenu.open() } },
                     onOpenDrawerNotifications = { scope.launch { drawerStateNotifications.open() } },
-                    showBackButton = false
+                    showBackButton = true
                 )
             }
         ) { paddingValues ->
@@ -120,8 +119,6 @@ fun HomeScreen( navController: NavHostController) {
             }
         }
     }
-
-
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -147,29 +144,14 @@ fun TagsSection(tags: List<String>) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             tags.forEach { tag ->
-                HomeChip(tag)
+                ChipComponent(tag)
             }
         }
     }
 }
 
-@Composable
-fun HomeChip(text: String) {
-    ElevatedAssistChip(
-        onClick = { /* TODO: Tag Action */ },
-        shape = RoundedCornerShape(16.dp),
-        label = { Text(text = text, style = TextStyle(fontSize = 14.sp)) },
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = Color(0xFFE2E8F7),
-            labelColor = TextColorPrimary
-        )
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(
-        navController = rememberNavController()
-    )
+    HomeScreen( navController = NavHostController(LocalContext.current) )
 }
