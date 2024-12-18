@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.connectdeaf.ui.screens.HomeScreen
 import com.connectdeaf.ui.screens.ProfileScreen
-import com.connectdeaf.ui.screens.RegisterScreenPreview
+import com.connectdeaf.ui.screens.RegisterScreen
 import com.connectdeaf.ui.screens.ServicesScreen
 
 
@@ -20,7 +20,7 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
     ) {
         composable("home") { HomeScreen( navController = navController) }
         composable("profile") { ProfileScreen( navController = navController) }
-        composable("profile") { RegisterScreenPreview( navController = navController) }
-        composable("home") { ServicesScreen( navController = navController) }
+        composable("register") { RegisterScreen( navController = navController, onClick = {}) }
+        composable("services") { ServicesScreen( navController = navController) }
     }
 }

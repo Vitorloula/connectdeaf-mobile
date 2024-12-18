@@ -12,15 +12,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -28,64 +32,83 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.theme.GreyLighter
 import com.connectdeaf.ui.theme.PrimaryColor
 import com.connectdeaf.viewmodel.AddressUiState
 import com.connectdeaf.viewmodel.AddressViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddressScreen(
     addressViewModel: AddressViewModel = viewModel(),
-    onContinueClick: () -> Unit
+    onContinueClick: () -> Unit,
+    navController: NavHostController
 ) {
     val uiState by addressViewModel.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            com.connectdeaf.ui.components.TopAppBar(
-                navController = null,
-                showBackButton = true
-            )
-        },
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(32.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            AddressHeaderSection()
+    val drawerStateMenu = rememberDrawerState(DrawerValue.Closed)
+    val drawerStateNotifications = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            AddressInputFields(
-                uiState = uiState,
-                onCepChange = addressViewModel::onCepChange,
-                onStateChange = addressViewModel::onStateChange,
-                onCityChange = addressViewModel::onCityChange,
-                onStreetChange = addressViewModel::onStreetChange,
-                onNeighborhoodChange = addressViewModel::onNeighborhoodChange
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Button (
-                onClick = onContinueClick,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                enabled = uiState.isInputValid,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (uiState.isInputValid) PrimaryColor else GreyLighter,
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(6.dp),
-            ) {
-                Text(
-                    "CONTINUAR",
-                    fontSize = 16.sp
+    DrawerMenu(
+        navController = navController,
+        scope = scope,
+        drawerStateMenu = drawerStateMenu,
+        drawerStateNotifications = drawerStateNotifications
+    ) {
+        Scaffold(
+            topBar = {
+                com.connectdeaf.ui.components.TopAppBar(
+                    onOpenDrawerMenu = { scope.launch { drawerStateMenu.open() } },
+                    onOpenDrawerNotifications = { scope.launch { drawerStateNotifications.open() } },
+                    showBackButton = true
                 )
             }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(32.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AddressHeaderSection()
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                AddressInputFields(
+                    uiState = uiState,
+                    onCepChange = addressViewModel::onCepChange,
+                    onStateChange = addressViewModel::onStateChange,
+                    onCityChange = addressViewModel::onCityChange,
+                    onStreetChange = addressViewModel::onStreetChange,
+                    onNeighborhoodChange = addressViewModel::onNeighborhoodChange
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Button(
+                    onClick = onContinueClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    enabled = uiState.isInputValid,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (uiState.isInputValid) PrimaryColor else GreyLighter,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp),
+                ) {
+                    Text(
+                        "CONTINUAR",
+                        fontSize = 16.sp
+                    )
+                }
+            }
+
         }
     }
 }
@@ -177,5 +200,5 @@ fun AddressInputFields(
 @Preview
 @Composable
 fun PreviewAddressScreen() {
-    AddressScreen(onContinueClick = {})
+    AddressScreen(onContinueClick = {}, navController = NavHostController(LocalContext.current))
 }

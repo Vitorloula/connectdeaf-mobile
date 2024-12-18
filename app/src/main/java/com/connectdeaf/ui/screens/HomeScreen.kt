@@ -54,7 +54,7 @@ fun HomeScreen( navController: NavHostController) {
                 com.connectdeaf.ui.components.TopAppBar(
                     onOpenDrawerMenu = { scope.launch { drawerStateMenu.open() } },
                     onOpenDrawerNotifications = { scope.launch { drawerStateNotifications.open() } },
-                    showBackButton = true
+                    showBackButton = false
                 )
             }
         ) { paddingValues ->
