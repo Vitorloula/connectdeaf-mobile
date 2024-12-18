@@ -25,23 +25,24 @@ import com.connectdeaf.R
 @Composable
 fun TopAppBar(
     navController: NavController? = null,
-    showBackButton: Boolean = false
+    showBackButton: Boolean = false,
+    isBot: Boolean = false,
 ) {
     CenterAlignedTopAppBar(
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val logoId = if (isBot) R.drawable.logo_bot else R.drawable.logo_horizontal
                 Image(
-                    painter = painterResource(id = R.drawable.logo_horizontal),
-                    contentDescription = "Logo Horizontal",
-                    modifier = Modifier.size(166.dp)
+                    painter = painterResource(id = logoId),
+                    contentDescription = if (isBot) "Logo Bot" else "Logo Horizontal",
+                    modifier = Modifier.size(if (isBot) 100.dp else 166.dp)
                 )
             }
         },
         navigationIcon = {
             if (showBackButton) {
-
                 IconButton(onClick = { navController?.popBackStack() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -50,7 +51,6 @@ fun TopAppBar(
                     )
                 }
             } else {
-
                 IconButton(onClick = {
                     navController?.navigate("Notifications") {
                         launchSingleTop = true
@@ -65,7 +65,6 @@ fun TopAppBar(
             }
         },
         actions = {
-
             if (!showBackButton) {
                 IconButton(onClick = {
                     navController?.navigate("Menu") {
@@ -81,7 +80,7 @@ fun TopAppBar(
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0XFF478FCC)
+            containerColor = Color(0xFF3D66CC)
         )
     )
 }
