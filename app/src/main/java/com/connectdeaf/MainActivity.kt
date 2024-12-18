@@ -17,9 +17,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContent {
-
             val navController = rememberNavController()
-
 
             enableEdgeToEdge()
             ConnectDeafTheme {

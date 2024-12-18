@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
@@ -146,6 +147,29 @@ fun MenuDrawerContent(navController: NavHostController, drawerState: DrawerState
                 )
                 Text(
                     text = "Perfil",
+                    color = Color.White
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        scope.launch {
+                            navController.navigate("faq")
+                            drawerState.close()
+                        }
+                    }
+                    .padding(vertical = 16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "FAQ",
+                    modifier = Modifier.padding(end = 24.dp),
+                    tint = Color.White
+                )
+                Text(
+                    text = "FAQ",
                     color = Color.White
                 )
             }

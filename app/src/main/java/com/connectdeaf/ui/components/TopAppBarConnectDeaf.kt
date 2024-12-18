@@ -44,7 +44,6 @@ fun TopAppBar(
             }
         },
         navigationIcon = {
-
             if (showBackButton) {
                 IconButton(onClick = { navController?.popBackStack() }) {
                     Icon(
