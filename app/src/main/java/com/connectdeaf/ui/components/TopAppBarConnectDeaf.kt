@@ -27,22 +27,23 @@ fun TopAppBar(
     navController: NavController? = null,
     onOpenDrawerNotifications: () -> Unit,
     onOpenDrawerMenu: () -> Unit,
-    showBackButton: Boolean
+    showBackButton: Boolean = false,
+    isBot: Boolean = false,
 ) {
     CenterAlignedTopAppBar(
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val logoId = if (isBot) R.drawable.logo_bot else R.drawable.logo_horizontal
                 Image(
-                    painter = painterResource(id = R.drawable.logo_horizontal),
-                    contentDescription = "Logo Horizontal",
-                    modifier = Modifier.size(166.dp)
+                    painter = painterResource(id = logoId),
+                    contentDescription = if (isBot) "Logo Bot" else "Logo Horizontal",
+                    modifier = Modifier.size(if (isBot) 100.dp else 166.dp)
                 )
             }
         },
         navigationIcon = {
-
             if (showBackButton) {
                 IconButton(onClick = { navController?.popBackStack() }) {
                     Icon(
@@ -52,11 +53,11 @@ fun TopAppBar(
                     )
                 }
             } else {
-
-                IconButton(
-                    onClick =
-                    onOpenDrawerNotifications
-                ) {
+                IconButton(onClick = {
+                    navController?.navigate("Notifications") {
+                        launchSingleTop = true
+                    }
+                }) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notificação",
@@ -66,7 +67,6 @@ fun TopAppBar(
             }
         },
         actions = {
-
             if (!showBackButton) {
                 IconButton(
                     onClick =
