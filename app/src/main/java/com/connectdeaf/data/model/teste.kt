@@ -1,4 +1,4 @@
 package com.connectdeaf.data.model
 
-class teste {
+class este {
 }
