@@ -50,6 +50,13 @@ android {
 }
 
 dependencies {
+    implementation(kotlin("stdlib"))
+    implementation(libs.dotenv.kotlin)
+    implementation(libs.retrofit)
+    implementation(libs.converter.moshi)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.converter.gson)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
