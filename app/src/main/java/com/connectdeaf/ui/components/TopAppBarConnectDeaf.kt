@@ -1,5 +1,6 @@
 package com.connectdeaf.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -24,25 +25,28 @@ import com.connectdeaf.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopAppBar(
-    navController: NavController? = null,
-    showBackButton: Boolean = false
+    navController: NavController,
+    onOpenDrawerNotifications: () -> Unit,
+    onOpenDrawerMenu: () -> Unit,
+    showBackButton: Boolean = false,
+    isBot: Boolean = false,
 ) {
     CenterAlignedTopAppBar(
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val logoId = if (isBot) R.drawable.logo_bot else R.drawable.logo_horizontal
                 Image(
-                    painter = painterResource(id = R.drawable.logo_horizontal),
-                    contentDescription = "Logo Horizontal",
-                    modifier = Modifier.size(166.dp)
+                    painter = painterResource(id = logoId),
+                    contentDescription = if (isBot) "Logo Bot" else "Logo Horizontal",
+                    modifier = Modifier.size(if (isBot) 100.dp else 166.dp)
                 )
             }
         },
         navigationIcon = {
             if (showBackButton) {
-
-                IconButton(onClick = { navController?.popBackStack() }) {
+                IconButton(onClick = { navController.popBackStack()  }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Voltar",
@@ -50,11 +54,8 @@ fun TopAppBar(
                     )
                 }
             } else {
-
                 IconButton(onClick = {
-                    navController?.navigate("Notifications") {
-                        launchSingleTop = true
-                    }
+                    onOpenDrawerNotifications()
                 }) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
@@ -65,13 +66,11 @@ fun TopAppBar(
             }
         },
         actions = {
-
             if (!showBackButton) {
-                IconButton(onClick = {
-                    navController?.navigate("Menu") {
-                        launchSingleTop = true
-                    }
-                }) {
+                IconButton(
+                    onClick =
+                    onOpenDrawerMenu
+                ) {
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Menu",
@@ -81,7 +80,7 @@ fun TopAppBar(
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0XFF478FCC)
+            containerColor = Color(0XFF3D66CC)
         )
     )
 }
