@@ -58,6 +58,7 @@ fun RegisterScreen(
         navController = navController,
         scope = scope,
         drawerViewModel = drawerViewModel,
+        gesturesEnabled = false
     ) {
         Scaffold(
             topBar = {
