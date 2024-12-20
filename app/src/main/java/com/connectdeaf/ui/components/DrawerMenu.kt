@@ -11,13 +11,14 @@ fun DrawerMenu(
     navController: NavController,
     scope: CoroutineScope,
     drawerViewModel: DrawerViewModel,
+    gesturesEnabled: Boolean = true, // usuario pode acessar o menu com o "swipe"
     content: @Composable () -> Unit
 ) {
 
 
     ModalNavigationDrawer(
         drawerState = drawerViewModel.drawerStateNotifications,
-        gesturesEnabled = true,
+        gesturesEnabled = gesturesEnabled,
         drawerContent = {
             NotificationDrawerContent(
                 navController = navController,
@@ -28,7 +29,7 @@ fun DrawerMenu(
         content = {
             ModalNavigationDrawer(
                 drawerState = drawerViewModel.drawerStateMenu,
-                gesturesEnabled = true,
+                gesturesEnabled = gesturesEnabled,
                 drawerContent = {
                     MenuDrawerContent(
                         navController = navController,
