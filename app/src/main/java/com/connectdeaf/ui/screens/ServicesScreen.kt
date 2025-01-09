@@ -18,6 +18,7 @@ import com.connectdeaf.ui.components.DropdownMenuField
 import com.connectdeaf.ui.components.SearchBarField
 import com.connectdeaf.ui.components.ServiceCard
 import com.connectdeaf.viewmodel.DrawerViewModel
+import com.connectdeaf.ui.theme.AppStrings
 import com.connectdeaf.viewmodel.ServicesViewModel
 import kotlinx.coroutines.launch
 
@@ -91,12 +92,16 @@ fun ServicesScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     DropdownMenuField(
-                        label = "Estado",
+                        value = viewModel.selectedState.value,
+                        label = AppStrings.ESTADO,
+                        onValueChange = { selectedState -> viewModel.updateState(selectedState)},
                         options = listOf("São Paulo", "Rio de Janeiro", "Bahia"),
                         modifier = Modifier.weight(1f)
                     )
                     DropdownMenuField(
-                        label = "Cidade",
+                        value = viewModel.selectedCity.value,
+                        label = AppStrings.CIDADE,
+                        onValueChange = { selectedCity -> viewModel.updateCity(selectedCity)},
                         options = listOf("Campinas", "Niterói", "Salvador"),
                         modifier = Modifier.weight(1f)
                     )
