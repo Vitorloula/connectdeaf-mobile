@@ -7,17 +7,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.connectdeaf.ui.components.GenericInputField
 import com.connectdeaf.viewmodel.SignInViewModel
 
 @Composable
-fun SignInScreen(viewModel: SignInViewModel = viewModel()) {
+fun SignInScreen(viewModel: SignInViewModel = viewModel(), navController: NavController) {
     val uiState by viewModel.uiState.collectAsState()
 
     Box(
@@ -62,7 +64,7 @@ fun SignInScreen(viewModel: SignInViewModel = viewModel()) {
             }
 
             OutlinedButton(
-                onClick = { viewModel.onSignIn() },
+                onClick = { navController.navigate("home") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF3D66CC) ,
@@ -108,5 +110,5 @@ fun SignInScreenPreview() {
         onEmailChange("teste@email.com")
         onPasswordChange("12345678")
     }
-    SignInScreen(viewModel = fakeViewModel)
+    SignInScreen(viewModel = fakeViewModel, navController = NavController(LocalContext.current))
 }
