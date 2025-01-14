@@ -15,8 +15,10 @@ class AuthRepository(private val context: Context) {
 
     suspend fun login(email: String, password: String): Result<LoginResponse> {
         return try {
+            val api = RetrofitInstance.api { null }
+
             val response = withContext(Dispatchers.IO) {
-                RetrofitInstance.api.login(LoginRequest(email, password))
+                api.login(LoginRequest(email, password))
             }
 
             val jwt = JWT(response.accessToken)
