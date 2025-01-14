@@ -4,6 +4,9 @@ coilCompose = "2.7.0"
 converterGson = "2.9.0"
 coreSplashscreen = "1.0.1"
 gson = "2.10.1"
+koinAndroid = "3.5.0"
+koinAndroidxCompose = "3.5.0"
+koinCore = "3.5.0"
 jwtdecodeVersion = "2.0.0"
 kotlin = "1.9.0"
 coreKtx = "1.15.0"
@@ -43,6 +46,9 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 androidx-runtime-android = { group = "androidx.compose.runtime", name = "runtime-android", version.ref = "runtimeAndroid" }
 androidx-ui-android = { group = "androidx.compose.ui", name = "ui-android", version.ref = "uiAndroid" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 
 [plugins]

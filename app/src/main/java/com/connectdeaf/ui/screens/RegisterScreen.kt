@@ -1,15 +1,20 @@
 package com.connectdeaf.ui.screens
 
-import com.connectdeaf.viewmodel.RegisterViewModel
-import androidx.compose.foundation.layout.*
+import RegisterUiState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,24 +39,23 @@ import androidx.navigation.compose.rememberNavController
 import com.connectdeaf.R
 import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.components.GenericInputField
+import com.connectdeaf.ui.components.ProfilePictureSection
+import com.connectdeaf.ui.components.TopAppBar
 import com.connectdeaf.ui.theme.AppStrings
 import com.connectdeaf.utils.PhoneVisualTransformation
 import com.connectdeaf.viewmodel.DrawerViewModel
-import com.connectdeaf.viewmodel.uistate.RegisterUiState
+import com.connectdeaf.viewmodel.RegisterViewModel
 import kotlinx.coroutines.launch
-
-// Arquivo novo e atualizado
 
 @Composable
 fun RegisterScreen(
     registerViewModel: RegisterViewModel = viewModel(),
-    onClick: () -> Unit,
     navController: NavController,
-    drawerViewModel: DrawerViewModel = viewModel()
+    drawerViewModel: DrawerViewModel = viewModel(),
 ) {
     val uiState by registerViewModel.uiState.collectAsState()
-    var passwordVisible by remember { mutableStateOf(false) }
 
+    var passwordVisible by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     DrawerMenu(
@@ -62,7 +66,7 @@ fun RegisterScreen(
     ) {
         Scaffold(
             topBar = {
-                com.connectdeaf.ui.components.TopAppBar(
+                TopAppBar(
                     onOpenDrawerMenu = { scope.launch { drawerViewModel.openMenuDrawer() } },
                     onOpenDrawerNotifications = { scope.launch { drawerViewModel.openNotificationsDrawer() } },
                     showBackButton = true,
@@ -75,16 +79,15 @@ fun RegisterScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp),
-                verticalArrangement = Arrangement.Top,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 HeaderSection()
-                com.connectdeaf.ui.components.ProfilePictureSection(
-                    onClick = onClick,
+
+                ProfilePictureSection(
+                    onClick = { /* Adicionar lógica para mudar foto de perfil */ },
                     imageResourceId = R.drawable.ic_launcher_background
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
 
                 ClientInputFields(
                     uiState = uiState,
@@ -95,51 +98,19 @@ fun RegisterScreen(
                     passwordVisible = passwordVisible,
                     onPasswordVisibilityChange = { passwordVisible = it }
                 )
-                Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedButton(
-                    onClick = onClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = uiState.isFormValid,  // Usando isFormValid para habilitar/desabilitar o botão
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.isFormValid) Color(0xFF478FCC) else Color(
-                            0xFF999999
-                        ),
-                        contentColor = if (uiState.isFormValid) Color.White else Color(0xFF478FCC)
-                    ),
-                    shape = RoundedCornerShape(6.dp)
-                ) {
-                    Text(
-                        "CONTINUAR",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
+                ContinueButton(
+                    uiState = uiState,
+                    onContinueClick = {
+                        if (uiState.isUserValid) {
+                            navController.navigate("addressScreen")
+                        }
+                    }
+                )
 
-                TextButton(
-                    onClick = onClick,
-                    modifier = Modifier.wrapContentHeight(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent, contentColor = Color(0xFF478FCC)
-                    ),
-                    shape = RoundedCornerShape(6.dp)
-                ) {
-                    Text(
-                        "Já tenho uma conta",
-                        style = TextStyle(
-                            textDecoration = TextDecoration.Underline,
-                            color = Color(0xFF478FCC),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
+                LoginLink(navController = navController)
             }
-
-
         }
-
     }
 }
 
@@ -195,7 +166,7 @@ fun ClientInputFields(
         keyboardType = KeyboardType.Phone,
         visualTransformation = PhoneVisualTransformation()
     )
-    
+
     Spacer(modifier = Modifier.height(14.dp))
 
     GenericInputField(
@@ -208,8 +179,51 @@ fun ClientInputFields(
     )
 }
 
+@Composable
+fun ContinueButton(uiState: RegisterUiState, onContinueClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onContinueClick,
+        modifier = Modifier.fillMaxWidth(),
+        enabled = uiState.isUserValid,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (uiState.isUserValid) Color(0xFF478FCC) else Color(0xFF999999),
+            contentColor = Color.White
+        ),
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Text(
+            "CONTINUAR",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun LoginLink(navController: NavController) {
+    TextButton(
+        onClick = { navController.navigate("LoginScreen") },
+        modifier = Modifier.wrapContentHeight(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent, contentColor = Color(0xFF478FCC)
+        ),
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Text(
+            "Já tenho uma conta",
+            style = TextStyle(
+                textDecoration = TextDecoration.Underline,
+                color = Color(0xFF478FCC),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+}
+
 @Preview
 @Composable
 fun RegisterScreenPreview() {
-    RegisterScreen(onClick = {}, navController = rememberNavController())
+    val navController = rememberNavController()
+    RegisterScreen(navController = navController)
 }
