@@ -41,7 +41,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SuccessRegistrationScreen(
-    onContinueClick: () -> Unit,
     navController: NavController,
     drawerViewModel: DrawerViewModel = viewModel()
 ) {
@@ -104,7 +103,7 @@ fun SuccessRegistrationScreen(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Button(
-                    onClick = onContinueClick,
+                    onClick = { navController.navigate("LoginScreen") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
@@ -128,7 +127,6 @@ fun SuccessRegistrationScreen(
 @Composable
 fun PreviewSuccessRegistrationScreen() {
     SuccessRegistrationScreen(
-        onContinueClick = {},
         navController = NavHostController(LocalContext.current)
     )
 }

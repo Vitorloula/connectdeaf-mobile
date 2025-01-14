@@ -1,5 +1,6 @@
 package com.connectdeaf.ui.screens
 
+import RegisterUiState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,12 +13,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,25 +34,34 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+
 import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.theme.GreyLighter
 import com.connectdeaf.ui.theme.PrimaryColor
-import com.connectdeaf.viewmodel.AddressUiState
-import com.connectdeaf.viewmodel.AddressViewModel
 import com.connectdeaf.viewmodel.DrawerViewModel
+import com.connectdeaf.viewmodel.RegisterViewModel
+import com.connectdeaf.viewmodel.factory.RegisterViewModelFactory
+
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun AddressScreen(
-    addressViewModel: AddressViewModel = viewModel(),
-    onContinueClick: () -> Unit,
+    registerViewModel: RegisterViewModel = viewModel(),
     navController: NavController,
     drawerViewModel: DrawerViewModel = viewModel()
 ) {
-    val uiState by addressViewModel.uiState.collectAsState()
+    val uiState by registerViewModel.uiState.collectAsState()
 
-
+    // Para lidar com escopos de corrotina
     val scope = rememberCoroutineScope()
+
+    // Navegação baseada no estado de "usuário criado"
+    LaunchedEffect(uiState.isUserCreated) {
+        if (uiState.isUserCreated) {
+            navController.navigate("successRegistrationScreen")
+        }
+    }
 
     DrawerMenu(
         navController = navController,
@@ -61,6 +70,7 @@ fun AddressScreen(
     ) {
         Scaffold(
             topBar = {
+                // Componente de barra superior personalizada
                 com.connectdeaf.ui.components.TopAppBar(
                     onOpenDrawerMenu = { scope.launch { drawerViewModel.openMenuDrawer() } },
                     onOpenDrawerNotifications = { scope.launch { drawerViewModel.openNotificationsDrawer() } },
@@ -77,43 +87,52 @@ fun AddressScreen(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Seção de cabeçalho
                 AddressHeaderSection()
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Campos de entrada para endereço
                 AddressInputFields(
                     uiState = uiState,
-                    onCepChange = addressViewModel::onCepChange,
-                    onStateChange = addressViewModel::onStateChange,
-                    onCityChange = addressViewModel::onCityChange,
-                    onStreetChange = addressViewModel::onStreetChange,
-                    onNeighborhoodChange = addressViewModel::onNeighborhoodChange
+                    onCepChange = registerViewModel::onCepChange,
+                    onStateChange = registerViewModel::onStateChange,
+                    onCityChange = registerViewModel::onCityChange,
+                    onStreetChange = registerViewModel::onStreetChange,
+                    onNeighborhoodChange = registerViewModel::onNeighborhoodChange,
+                    onNumberChange = registerViewModel::onNumberChange, // Adicionado
+                    onComplementChange = registerViewModel::onComplementChange // Adicionado
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                // Botão de continuar
                 Button(
-                    onClick = onContinueClick,
+                    onClick = {
+                        registerViewModel.registerUser()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    enabled = uiState.isInputValid,
+                    enabled = uiState.isFormValid, // Validação do formulário
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.isInputValid) PrimaryColor else GreyLighter,
+                        containerColor = if (uiState.isFormValid) PrimaryColor else GreyLighter,
                         contentColor = Color.White
                     ),
-                    shape = RoundedCornerShape(6.dp),
+                    shape = RoundedCornerShape(6.dp)
                 ) {
                     Text(
-                        "CONTINUAR",
-                        fontSize = 16.sp
+                        text = "CONTINUAR",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
-
         }
     }
 }
+
+
 
 @Composable
 fun AddressHeaderSection() {
@@ -125,7 +144,9 @@ fun AddressHeaderSection() {
         color = Color.Black,
     )
 
+
     Spacer(modifier = Modifier.height(8.dp))
+
 
     Text(
         text = "Nos conte onde podemos ajudar você!",
@@ -135,14 +156,17 @@ fun AddressHeaderSection() {
     )
 }
 
+
 @Composable
 fun AddressInputFields(
-    uiState: AddressUiState,
+    uiState: RegisterUiState,
     onCepChange: (String) -> Unit,
     onStateChange: (String) -> Unit,
     onCityChange: (String) -> Unit,
     onStreetChange: (String) -> Unit,
-    onNeighborhoodChange: (String) -> Unit
+    onNeighborhoodChange: (String) -> Unit,
+    onNumberChange: (String) -> Unit, // Adicionado para o campo Número
+    onComplementChange: (String) -> Unit // Adicionado para o campo Complemento
 ) {
     OutlinedTextField(
         value = uiState.cep,
@@ -189,18 +213,44 @@ fun AddressInputFields(
 
     Spacer(modifier = Modifier.height(16.dp))
 
+    Row {
+        OutlinedTextField(
+            value = uiState.number,
+            onValueChange = onNumberChange,
+            label = { Text("Número") },
+            shape = RoundedCornerShape(5.dp),
+            textStyle = TextStyle(color = Color.Black),
+            modifier = Modifier.width(116.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+
+        OutlinedTextField(
+            value = uiState.neighborhood,
+            onValueChange = onNeighborhoodChange,
+            label = { Text("Bairro") },
+            shape = RoundedCornerShape(5.dp),
+            textStyle = TextStyle(color = Color.Black),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
     OutlinedTextField(
-        value = uiState.neighborhood,
-        onValueChange = onNeighborhoodChange,
-        label = { Text("Bairro") },
+        value = uiState.complement,
+        onValueChange = onComplementChange,
+        label = { Text("Complemento") },
         shape = RoundedCornerShape(5.dp),
         textStyle = TextStyle(color = Color.Black),
         modifier = Modifier.fillMaxWidth()
     )
 }
 
+
 @Preview
 @Composable
 fun PreviewAddressScreen() {
-    AddressScreen(onContinueClick = {}, navController = NavHostController(LocalContext.current))
+    AddressScreen(navController = NavHostController(LocalContext.current))
 }
