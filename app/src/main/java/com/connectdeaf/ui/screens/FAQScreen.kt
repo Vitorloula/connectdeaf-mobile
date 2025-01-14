@@ -2,17 +2,14 @@ package com.connectdeaf.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,23 +26,29 @@ import com.connectdeaf.ui.components.TopAppBar
 import com.connectdeaf.viewmodel.DrawerViewModel
 import com.connectdeaf.viewmodel.FAQViewModel
 import kotlinx.coroutines.launch
-
+import org.koin.androidx.compose.getViewModel
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 
 @Composable
 fun FAQScreen(
-    faqViewModel: FAQViewModel? = null,
     navController: NavController,
+    faqViewModel: FAQViewModel = getViewModel(), // Injetada via Koin
     drawerViewModel: DrawerViewModel = viewModel()
 ) {
     var userMessage by remember { mutableStateOf(TextFieldValue("")) }
-
     val scope = rememberCoroutineScope()
+
+    val messageList by faqViewModel.messages.collectAsState()
+    val isLoading by faqViewModel.isLoading.collectAsState()
+
+    val listState: LazyListState = rememberLazyListState()
 
     DrawerMenu(
         navController = navController,
         scope = scope,
         gesturesEnabled = false,
-        drawerViewModel = drawerViewModel,
+        drawerViewModel = drawerViewModel
     ) {
         Scaffold(
             topBar = {
@@ -65,29 +68,25 @@ fun FAQScreen(
                     .background(MaterialTheme.colorScheme.background),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    state = listState,
+                    contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
-                    MessageCard(
-                        sender = "CDBot",
-                        message = "Oi! 👋 Eu sou o **CDBot**, seu bot de dúvidas aqui no app. 🤖\nEstou aqui para responder suas perguntas frequentes e te ajudar com tudo o que precisar. É só perguntar, e eu dou aquela mãozinha! ✌️✨",
-                        isBot = true
-                    )
-                    MessageCard(
-                        sender = "Você",
-                        message = "O Que é a ConnectDeaf?",
-                        isBot = false
-                    )
-                    MessageCard(
-                        sender = "Você",
-                        message = "A ConnectDeaf é uma plataforma que visa promover inclusão social, fazendo a ponte entre profssionais de diversas áreas e pessoas surdas.",
-                        isBot = true
-                    )
+                    items(messageList) { chatMessage ->
+                        MessageCard(
+                            sender = chatMessage.sender,
+                            message = chatMessage.text,
+                            isBot = chatMessage.isBot
+                        )
+                        Spacer(modifier = Modifier.height(8.dp)) // Espaçamento entre mensagens
+                    }
                 }
 
+                // Campo de digitação do usuário + botão de enviar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -117,10 +116,25 @@ fun FAQScreen(
                                 innerTextField()
                             }
                         )
+
                         Spacer(modifier = Modifier.width(8.dp))
+
                         IconButton(
                             onClick = {
-                            }
+                                if (userMessage.text.isNotBlank()) {
+                                    faqViewModel.sendMessage(userMessage.text)
+                                    userMessage = TextFieldValue("")
+
+                                    // Rola para a última mensagem após enviar
+                                    scope.launch {
+                                        // Aguarda a recomposição para garantir que a mensagem foi adicionada
+                                        // Pode ajustar o delay conforme necessário
+                                        kotlinx.coroutines.delay(100)
+                                        listState.animateScrollToItem(messageList.size)
+                                    }
+                                }
+                            },
+                            enabled = !isLoading
                         ) {
                             Box(
                                 modifier = Modifier
@@ -144,5 +158,3 @@ fun FAQScreen(
         }
     }
 }
-
-
