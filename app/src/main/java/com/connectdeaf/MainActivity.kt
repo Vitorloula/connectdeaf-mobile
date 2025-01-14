@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun RegisterScreenPreview() {
-    RegisterScreen(onClick = {}, navController = rememberNavController())
+    RegisterScreen(navController = rememberNavController())
 }
 
 
