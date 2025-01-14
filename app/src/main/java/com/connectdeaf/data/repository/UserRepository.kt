@@ -12,7 +12,7 @@ class UserRepository {
     suspend fun createUser(userRequest: UserRequest): Result<User> {
         return try {
             val createdUser = withContext(Dispatchers.IO) {
-                RetrofitInstance.api.createUser(userRequest)
+                RetrofitInstance.api().createUser(userRequest)
             }
 
             if (createdUser.id != null) {

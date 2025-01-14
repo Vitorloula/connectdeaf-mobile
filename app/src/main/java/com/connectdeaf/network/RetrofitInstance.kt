@@ -1,7 +1,7 @@
 package com.connectdeaf.network
 
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingIntercep
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit
 object RetrofitInstance {
 
     private const val BASE_URL = "https://connectdeaf-dev.azurewebsites.net/"
+    private const val BASE_URL_MAIN = "https://connectdeaf-dev.azurewebsites.net/"
+    private const val BASE_URL_AI = "https://webapp-connectdeaf-dev.azurewebsites.net/"
 
     fun api(getToken: (() -> String?)? = null): ApiService {
         val clientBuilder = OkHttpClient.Builder()
@@ -26,11 +28,9 @@ object RetrofitInstance {
             .client(clientBuilder.build())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        
+
         return retrofit.create(ApiService::class.java)
     }
-    private const val BASE_URL_MAIN = "https://connectdeaf-dev.azurewebsites.net/"
-    private const val BASE_URL_AI = "https://webapp-connectdeaf-dev.azurewebsites.net/"
 
     private val customClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
@@ -44,8 +44,7 @@ object RetrofitInstance {
             .addConverterFactory(GsonConverterFactory.create())
             .client(customClient)
             .build()
-
-        return retrofit.create(ApiService::class.java)
+            .create(ApiService::class.java)
     }
 
     val aiApi: FAQApiService by lazy {
