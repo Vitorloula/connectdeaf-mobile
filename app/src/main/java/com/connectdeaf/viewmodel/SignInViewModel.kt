@@ -1,7 +1,9 @@
 package com.connectdeaf.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.connectdeaf.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -17,7 +19,8 @@ data class SignInUiState(
     val errorMessage: String? = null
 )
 
-class SignInViewModel : ViewModel() {
+class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() {
+
     private val _uiState = MutableStateFlow(SignInUiState())
     val uiState: StateFlow<SignInUiState> = _uiState
 
@@ -37,11 +40,10 @@ class SignInViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(rememberMe = checked)
     }
 
-    fun onSignIn() {
+    fun onSignIn(onSuccess: () -> Unit) {
         val currentState = _uiState.value
         var hasError = false
 
-        // Validate inputs
         if (currentState.email.isBlank()) {
             _uiState.value = currentState.copy(emailError = "Insira um email válido!")
             hasError = true
@@ -53,18 +55,23 @@ class SignInViewModel : ViewModel() {
 
         if (hasError) return
 
-        // Perform login
         viewModelScope.launch {
             _uiState.value = currentState.copy(isSubmitting = true)
             try {
-                val success = true
-                if (success) {
-                    // Navigate to the appropriate screen
+                val result = authRepository.login(
+                    email = currentState.email,
+                    password = currentState.password
+                )
+                if (result.isSuccess) {
+                    val loginResponse = result.getOrThrow()
+                    Log.d("SignInViewModel", "Login bem-sucedido: Token=${loginResponse.accessToken}")
+                    onSuccess()
                 } else {
-                    _uiState.value = _uiState.value.copy(errorMessage = "Erro ao fazer login")
+                    _uiState.value = _uiState.value.copy(errorMessage = "Credenciais inválidas")
                 }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(errorMessage = e.message)
+                Log.e("SignInViewModel", "Erro inesperado: ${e.message}")
+                _uiState.value = _uiState.value.copy(errorMessage = "Erro ao realizar login: ${e.message}")
             } finally {
                 _uiState.value = _uiState.value.copy(isSubmitting = false)
             }
