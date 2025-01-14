@@ -1,8 +1,10 @@
-
 package com.connectdeaf.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.connectdeaf.data.repository.AuthRepository
+import com.connectdeaf.network.RetrofitInstance
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,52 +24,48 @@ data class Assessment(
     val description: String
 )
 
+data class Address(
+    val city: String,
+    val state: String
+)
+
 data class Profile(
     val id: String,
     val name: String,
-    val city: String,
-    val state: String,
-    val description: String,
-    val imageUrl: String,
-    val category: List<String>,
-    val services: List<Service>,
-    val assessments: List<Assessment>
+    val addresses: List<Address>,
+    val description: String?,
+    val imageUrl: String?,
+    val category: List<String>?,
+    val services: List<Service>?,
+    val assessments: List<Assessment>?
 )
 
 class ProfileViewModel : ViewModel() {
+
     private val _profile = MutableStateFlow<Profile?>(null)
     val profile: StateFlow<Profile?> = _profile
 
-    fun fetchProfile(professionalId: String) {
+    fun fetchProfile(professionalId: String, authRepository: AuthRepository) {
         viewModelScope.launch {
-            // Simule o fetch de dados (substitua com chamada de API real)
-            val mockProfile = Profile(
-                id = professionalId,
-                name = "Fernando Byano",
-                city = "Quixadá",
-                state = "CE",
-                description = "Lorem ipsum dolor sit amet...",
-                imageUrl = "",
-                category = listOf("IA", "Designer"),
-                services = listOf(
-                    Service(
-                        id = "1",
-                        name = "Criar branding",
-                        description = "Ajuda no desenvolvimento da identidade visual.",
-                        category = listOf("Design", "Branding"),
-                        value = "R$170",
-                        imageUrl = ""
-                    )
-                ),
-                assessments = listOf(
-                    Assessment(
-                        name = "Luis Estevam",
-                        stars = 4,
-                        description = "Ótimo profissional!"
-                    )
+            try {
+                val token = authRepository.getAuthToken()
+
+                val api = RetrofitInstance.api { token }
+
+                Log.d("ProfileViewModel", "Fetching profile for professionalId: $professionalId with token: $token")
+
+
+                val professional = api.getProfessional(professionalId)
+
+                _profile.value = professional.copy(
+                    services = null,
+                    assessments = null
                 )
-            )
-            _profile.value = mockProfile
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Error fetching profile", e)
+            }
         }
     }
 }
+
+

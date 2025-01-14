@@ -76,4 +76,5 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.gson)
     implementation(libs.android.jwtdecode)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 }

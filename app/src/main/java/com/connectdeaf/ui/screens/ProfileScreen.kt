@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,33 +28,34 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.connectdeaf.R
+import com.connectdeaf.data.repository.AuthRepository
 import com.connectdeaf.ui.components.AssessmentCard
 import com.connectdeaf.ui.components.ChipComponent
 import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.components.ServiceCard
 import com.connectdeaf.ui.theme.ConnectDeafTheme
-import com.connectdeaf.viewmodel.Assessment
 import com.connectdeaf.viewmodel.DrawerViewModel
-import com.connectdeaf.viewmodel.Profile
 import com.connectdeaf.viewmodel.ProfileViewModel
-import com.connectdeaf.viewmodel.Service
 import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
-    profile: Profile? = fakeProfile,
     viewModel: ProfileViewModel = viewModel(),
     navController: NavController,
     drawerViewModel: DrawerViewModel = viewModel()
 ) {
 
-
-    if (profile == null) {
-        CircularProgressIndicator(modifier = Modifier.fillMaxSize())
-        return
-    }
-
+    val profileState = viewModel.profile.collectAsState()
     val scope = rememberCoroutineScope()
+
+    val authRepository = AuthRepository(LocalContext.current)
+    val professionalId = authRepository.getProfessionalId()
+
+    LaunchedEffect (key1 = professionalId) {
+        if (professionalId != null) {
+            viewModel.fetchProfile(professionalId, authRepository)
+        }
+    }
 
     DrawerMenu(
         navController = navController,
@@ -75,6 +78,7 @@ fun ProfileScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(paddingValues)
+                    .padding(16.dp)
                     .background(MaterialTheme.colorScheme.background),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -103,7 +107,7 @@ fun ProfileScreen(
                     ) {
 
                         AsyncImage(
-                            model = profile.imageUrl,
+                            model = profileState.value?.imageUrl,
                             contentDescription = "Profile Picture",
                             modifier = Modifier
                                 .size(80.dp)
@@ -114,12 +118,14 @@ fun ProfileScreen(
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = profile.name,
-                                style = MaterialTheme.typography.titleLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            profileState.value?.name?.let {
+                                Text(
+                                    text = it,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                             Row {
                                 Image(
                                     painter = painterResource(id = R.drawable.location_icon),
@@ -128,7 +134,7 @@ fun ProfileScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "${profile.city}, ${profile.state}",
+                                    text = "${profileState.value?.addresses?.first()?.city}, ${profileState.value?.addresses?.first()?.state}",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.Blue
                                 )
@@ -140,7 +146,7 @@ fun ProfileScreen(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
-                                    text = " ${profile.assessments.size} (${profile.assessments.size} avaliações)",
+                                    text = " ${profileState.value?.assessments?.size} (${profileState.value?.assessments?.size} avaliações)",
                                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
                                     color = Color.Gray
                                 )
@@ -151,24 +157,26 @@ fun ProfileScreen(
 
                 // "Mais sobre mim"
                 SectionCard(title = "Mais sobre mim") {
-                    Text(
-                        text = profile.description,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    profileState.value?.description?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // "Minhas habilidades"
-                    if (profile.category.isNotEmpty()) {
+                    if (profileState.value?.category?.isNotEmpty() == true) {
                         Column {
                             Text(
                                 text = "Minhas habilidades",
                                 style = MaterialTheme.typography.titleMedium
                             )
                             var currentRowItems = mutableListOf<String>()
-                            profile.category.forEachIndexed { index, skill ->
+                            profileState.value?.category!!.forEachIndexed { index, skill ->
                                 currentRowItems.add(skill)
-                                if (currentRowItems.size == 3 || index == profile.category.lastIndex) {
+                                if (currentRowItems.size == 3 || index == profileState.value?.category!!.lastIndex) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -199,15 +207,14 @@ fun ProfileScreen(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-
                 // Serviços
-                if (profile.services.isNotEmpty()) {
+                if (profileState.value?.services?.isNotEmpty() == true) {
                     Row(
                         modifier = Modifier
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        profile.services.forEach { service ->
+                        profileState.value?.services!!.forEach { service ->
                             ServiceCard(
                                 id = service.id,
                                 description = service.description,
@@ -217,12 +224,18 @@ fun ProfileScreen(
                             )
                         }
                     }
+                }else{
+                    Text(
+                        text = "Nenhum serviço cadastrado",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
 
 
                 // Avaliações
-                if (profile.assessments.isNotEmpty()) {
-                    SectionCard(title = "Avaliações sobre o profissional") {
+
+                SectionCard(title = "Avaliações sobre o profissional") {
+                    if (profileState.value?.assessments?.isNotEmpty() == true) {
                         Row {
                             Image(
                                 painter = painterResource(id = R.drawable.star_filled_icon),
@@ -230,7 +243,7 @@ fun ProfileScreen(
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = " ${profile.assessments.size} (${profile.assessments.size} avaliações)",
+                                text = " ${profileState.value?.assessments!!.size} (${profileState.value?.assessments!!.size} avaliações)",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
                                 color = Color.Gray
                             )
@@ -241,7 +254,7 @@ fun ProfileScreen(
                                 .horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            profile.assessments.forEach { assessment ->
+                            profileState.value?.assessments!!.forEach { assessment ->
                                 AssessmentCard(
                                     name = assessment.name,
                                     stars = assessment.stars,
@@ -250,6 +263,12 @@ fun ProfileScreen(
                             }
                         }
 
+                    }
+                    else{
+                        Text(
+                            text = "Nenhuma avaliação cadastrada",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
             }
@@ -277,54 +296,10 @@ fun SectionCard(title: String, content: @Composable () -> Unit) {
     }
 }
 
-val fakeServices = listOf(
-    Service(
-        id = "1",
-        name = "Desenvolvimento de Aplicativos",
-        description = "Criação de aplicativos personalizados para Android e iOS.",
-        category = listOf("Tecnologia", "Desenvolvimento", "Mobile"),
-        value = "R$ 500,00",
-        imageUrl = "https://via.placeholder.com/150"
-    ),
-    Service(
-        id = "2",
-        name = "Consultoria em Tecnologia",
-        description = "Consultoria para melhorar processos e implementar soluções tecnológicas.",
-        category = listOf("Consultoria", "TI"),
-        value = "R$ 300,00",
-        imageUrl = "https://via.placeholder.com/150"
-    )
-)
-
-val fakeAssessments = listOf(
-    Assessment(
-        name = "Maria Oliveira",
-        stars = 5,
-        description = "Ótimo serviço! Muito profissional e eficiente."
-    ),
-    Assessment(
-        name = "Carlos Andrade",
-        stars = 4,
-        description = "Muito bom, mas houve um pequeno atraso na entrega."
-    )
-)
-
-val fakeProfile = Profile(
-    id = "1",
-    name = "João da Silva",
-    imageUrl = "https://via.placeholder.com/64",
-    city = "Quixadá",
-    state = "CE",
-    description = "Sou um desenvolvedor Android apaixonado por Compose.",
-    category = listOf("Kotlin", "Compose", "Android"),
-    services = fakeServices,
-    assessments = fakeAssessments,
-)
-
 @Composable
 @Preview(showBackground = true)
 fun PreviewProfileScreen() {
     ConnectDeafTheme {
-        ProfileScreen(profile = fakeProfile, navController = NavHostController(LocalContext.current))
+        ProfileScreen(navController = NavHostController(LocalContext.current))
     }
 }
