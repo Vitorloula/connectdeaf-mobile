@@ -19,13 +19,8 @@ interface ApiService {
     @GET("api/professionals/{id}")
     suspend fun getProfessional(@Path("id") id: String): Profile
 
-
-    @GET("api/professionals/{id}/services")
+    @GET("api/services/{id}")
     suspend fun getServices(@Path("id") id: String): List<Service>
-
-
-    @GET("api/professionals/{id}/assessments")
-    suspend fun getAssessments(@Path("id") id: String): List<Assessment>
 
     @POST("api/users")
     suspend fun createUser(@Body user: UserRequest): User
