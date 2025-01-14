@@ -34,10 +34,11 @@ import com.connectdeaf.R
 import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.components.OptionCardButton
 import com.connectdeaf.ui.components.TopAppBar
+import com.connectdeaf.viewmodel.DrawerViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun RegisterInitialScreen(navController: NavHostController) {
+fun RegisterInitialScreen(navController: NavHostController, drawerViewModel: DrawerViewModel = DrawerViewModel() ) {
     val drawerStateMenu = rememberDrawerState(DrawerValue.Closed)
     val drawerStateNotifications = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -46,17 +47,18 @@ fun RegisterInitialScreen(navController: NavHostController) {
     DrawerMenu(
         navController = navController,
         scope = scope,
-        drawerStateMenu = drawerStateMenu,
-        drawerStateNotifications = drawerStateNotifications,
+        drawerViewModel = drawerViewModel,
+
     ) {
         Scaffold(
             topBar = {
                 TopAppBar(
                     onOpenDrawerMenu = { scope.launch { drawerStateMenu.open() } },
                     onOpenDrawerNotifications = { scope.launch { drawerStateNotifications.open() } },
-                    showBackButton = true,
+                    showBackButton = false,
                     isBot = false,
-                    isRegistration = true
+                    isRegistration = true,
+                    navController = navController
                 )
             }
         ) { paddingValues ->
@@ -116,7 +118,13 @@ fun RegisterInitialScreen(navController: NavHostController) {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
-                        onClick = { navController.navigate("nextScreen") },
+                        onClick = {
+                            if (selectedOption.value == "Cliente") {
+                                navController.navigate("registerScreen")
+                            } else {
+                                navController.navigate("registerProfessionalScreen")
+                            }
+                        },
                         enabled = selectedOption.value != null,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp)
