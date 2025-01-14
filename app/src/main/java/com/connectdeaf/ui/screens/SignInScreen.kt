@@ -10,18 +10,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.connectdeaf.data.repository.AuthRepository
 import com.connectdeaf.ui.components.GenericInputField
 import com.connectdeaf.viewmodel.SignInViewModel
+import com.connectdeaf.viewmodel.factory.SignInViewModelFactory
 
 @Composable
-fun SignInScreen(viewModel: SignInViewModel = viewModel(), navController: NavController) {
-    val uiState by viewModel.uiState.collectAsState()
+fun SignInScreen(
+    navController: NavController
+) {
+    val context = LocalContext.current
+    val authRepository = AuthRepository(context)
+    val viewModel: SignInViewModel = viewModel(
+        factory = SignInViewModelFactory(authRepository)
+    )
 
+    val uiState by viewModel.uiState.collectAsState()
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize()
@@ -64,19 +72,31 @@ fun SignInScreen(viewModel: SignInViewModel = viewModel(), navController: NavCon
             }
 
             OutlinedButton(
-                onClick = { navController.navigate("home") },
+                onClick = {
+                    viewModel.onSignIn {
+                        navController.navigate("home")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF3D66CC) ,
+                    containerColor = Color(0xFF3D66CC),
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(6.dp)
             ) {
-                Text(
-                    "CONTINUAR",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (uiState.isSubmitting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        "CONTINUAR",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             if (uiState.errorMessage != null) {
@@ -91,7 +111,7 @@ fun SignInScreen(viewModel: SignInViewModel = viewModel(), navController: NavCon
             Spacer(modifier = Modifier.height(4.dp))
 
             TextButton(
-                onClick = {  },
+                onClick = { /* Implementar recuperação de senha */ },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
                     contentColor = Color(0xFF3D66CC)
@@ -101,14 +121,4 @@ fun SignInScreen(viewModel: SignInViewModel = viewModel(), navController: NavCon
             }
         }
     }
-}
-
-@Preview(showBackground = true, name = "SignIn Screen")
-@Composable
-fun SignInScreenPreview() {
-    val fakeViewModel = SignInViewModel().apply {
-        onEmailChange("teste@email.com")
-        onPasswordChange("12345678")
-    }
-    SignInScreen(viewModel = fakeViewModel, navController = NavController(LocalContext.current))
 }
