@@ -11,6 +11,10 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 
 
+data class LoginRequest(val email: String, val password: String)
+data class LoginResponse(val accessToken: String, val expiresIn: Int)
+
+
 interface ApiService {
     @GET("api/professionals/{id}")
     suspend fun getProfessional(@Path("id") id: String): Profile
@@ -23,7 +27,9 @@ interface ApiService {
     @GET("api/professionals/{id}/assessments")
     suspend fun getAssessments(@Path("id") id: String): List<Assessment>
 
-
     @POST("api/users")
     suspend fun createUser(@Body user: UserRequest): User
+
+    @POST("api/auth/login")
+    suspend fun login(@Body request: LoginRequest): LoginResponse
 }
