@@ -45,6 +45,7 @@ import com.connectdeaf.ui.theme.AppStrings
 import com.connectdeaf.utils.PhoneVisualTransformation
 import com.connectdeaf.viewmodel.DrawerViewModel
 import com.connectdeaf.viewmodel.RegisterViewModel
+import com.connectdeaf.viewmodel.factory.RegisterViewModelFactory
 import kotlinx.coroutines.launch
 
 @Composable
@@ -78,16 +79,20 @@ fun RegisterScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                    .padding(32.dp),
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 HeaderSection()
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 ProfilePictureSection(
                     onClick = { /* Adicionar lógica para mudar foto de perfil */ },
                     imageResourceId = R.drawable.ic_launcher_background
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 ClientInputFields(
                     uiState = uiState,
@@ -98,6 +103,8 @@ fun RegisterScreen(
                     passwordVisible = passwordVisible,
                     onPasswordVisibilityChange = { passwordVisible = it }
                 )
+
+                Spacer(modifier = Modifier.weight(1f))
 
                 ContinueButton(
                     uiState = uiState,
@@ -120,15 +127,17 @@ fun HeaderSection() {
         text = "Cadastro",
         fontSize = 20.sp,
         fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Medium,
         color = Color.Black,
-        modifier = Modifier.padding(6.dp)
     )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
     Text(
         text = "Me fala mais sobre você, cliente!",
         fontSize = 16.sp,
         fontFamily = FontFamily.SansSerif,
         color = Color.Black,
-        modifier = Modifier.padding(8.dp)
     )
 }
 
@@ -148,8 +157,6 @@ fun ClientInputFields(
         label = AppStrings.NAME
     )
 
-    Spacer(modifier = Modifier.height(14.dp))
-
     GenericInputField(
         value = uiState.email,
         onValueChange = onEmailChange,
@@ -166,8 +173,6 @@ fun ClientInputFields(
         keyboardType = KeyboardType.Phone,
         visualTransformation = PhoneVisualTransformation()
     )
-
-    Spacer(modifier = Modifier.height(14.dp))
 
     GenericInputField(
         value = uiState.password,
@@ -225,5 +230,6 @@ fun LoginLink(navController: NavController) {
 @Composable
 fun RegisterScreenPreview() {
     val navController = rememberNavController()
-    RegisterScreen(navController = navController)
+    val registerViewModel: RegisterViewModel = viewModel(factory = RegisterViewModelFactory())
+    RegisterScreen(navController = navController, registerViewModel = registerViewModel)
 }
