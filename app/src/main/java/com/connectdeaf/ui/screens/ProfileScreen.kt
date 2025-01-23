@@ -217,13 +217,15 @@ fun ProfileScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         profileState.value?.services!!.forEach { service ->
-                            ServiceCard(
-                                id = service.id,
-                                description = service.description,
-                                image = R.drawable.doutor.toString(),
-                                value = service.value,
-                                onClick = {}
-                            )
+                            service.id?.let {
+                                ServiceCard(
+                                    id = it,
+                                    description = service.description,
+                                    image = R.drawable.doutor.toString(),
+                                    value = service.value,
+                                    onClick = {}
+                                )
+                            }
                         }
                     }
                 }else{
