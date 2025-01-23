@@ -91,7 +91,7 @@ fun MenuDrawerContent(
                     .fillMaxWidth()
                     .clickable {
                         scope.launch {
-                            navController.navigate("home")
+                            navController.navigate("ScheduleScreen")
                             drawerState.close()
                         }
                     }
