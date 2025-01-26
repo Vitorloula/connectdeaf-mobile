@@ -1,5 +1,6 @@
 package com.connectdeaf.ui.screens
 
+import RegisterUiState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.connectdeaf.R
 import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.components.DropdownMenuField
@@ -44,20 +46,19 @@ import com.connectdeaf.ui.components.HeaderSectionRegister
 import com.connectdeaf.ui.components.ProfilePictureSection
 import com.connectdeaf.ui.theme.AppStrings
 import com.connectdeaf.utils.PhoneVisualTransformation
-import com.connectdeaf.viewmodel.RegisterProfessionalViewModel
-import com.connectdeaf.viewmodel.uistate.RegisterProfessionalUiState
 import com.connectdeaf.ui.theme.PrimaryColor
 import com.connectdeaf.viewmodel.DrawerViewModel
+import com.connectdeaf.viewmodel.RegisterViewModel
+import com.connectdeaf.viewmodel.factory.RegisterViewModelFactory
 import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterProfessionalScreen(
-    registerProfessionalViewModel: RegisterProfessionalViewModel = viewModel(),
+    registerViewModel: RegisterViewModel = viewModel(),
     navController: NavController,
-    onClick: () -> Unit,
     drawerViewModel: DrawerViewModel = DrawerViewModel()
 ) {
-    val uiState by registerProfessionalViewModel.uiState.collectAsState()
+    val uiState by registerViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
     val drawerStateMenu = rememberDrawerState(DrawerValue.Closed)
@@ -91,32 +92,36 @@ fun RegisterProfessionalScreen(
             ) {
                 HeaderSectionRegister(isProfessional = true)
                 ProfilePictureSection(
-                    onClick = onClick,
+                    onClick = { /* Adicionar lógica para mudar foto de perfil */ },
                     imageResourceId = R.drawable.ic_launcher_background
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
                 ProfessionalInputFields(
                     uiState = uiState,
-                    onNameChange = registerProfessionalViewModel::onNameChange,
-                    onEmailChange = registerProfessionalViewModel::onEmailChange,
-                    onPhoneChange = registerProfessionalViewModel::onPhoneChange,
-                    onPasswordChange = registerProfessionalViewModel::onPasswordChange,
-                    onAreaDeAtuacaoChange = registerProfessionalViewModel::onAreaDeAtuacaoChange,
+                    onNameChange = registerViewModel::onNameChange,
+                    onEmailChange = registerViewModel::onEmailChange,
+                    onPhoneChange = registerViewModel::onPhoneChange,
+                    onPasswordChange = registerViewModel::onPasswordChange,
+                    onAreaOfExpertiseChange = registerViewModel::onAreaOfExpertiseChange,
                     passwordVisible = passwordVisible,
                     onPasswordVisibilityChange = { passwordVisible = it },
-                    onQualificationChange = registerProfessionalViewModel::onQualificationChange
+                    onQualificationChange = registerViewModel::onQualificationChange
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedButton(
-                    onClick = onClick,
+                    onClick = {
+                        if (uiState.isProfessionalValid) {
+                            navController.navigate("addressScreen")
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = uiState.isFormValid,
+                    enabled = uiState.isProfessionalValid,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.isFormValid) PrimaryColor else Color(0xFF999999),
-                        contentColor = if (uiState.isFormValid) Color.White else PrimaryColor
+                        containerColor = if (uiState.isProfessionalValid) PrimaryColor else Color(0xFF999999),
+                        contentColor = if (uiState.isProfessionalValid) Color.White else PrimaryColor
                     ),
                     shape = RoundedCornerShape(6.dp)
                 ) {
@@ -129,7 +134,7 @@ fun RegisterProfessionalScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 TextButton(
-                    onClick = onClick,
+                    onClick = { navController.navigate("LoginScreen") },
                     modifier = Modifier.wrapContentHeight(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent, contentColor = Color(0xFF478FCC)
@@ -154,12 +159,12 @@ fun RegisterProfessionalScreen(
 
 @Composable
 fun ProfessionalInputFields(
-    uiState: RegisterProfessionalUiState,
+    uiState: RegisterUiState,
     onNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
-    onAreaDeAtuacaoChange: (String) -> Unit,
+    onAreaOfExpertiseChange: (String) -> Unit,
     onQualificationChange: (String) -> Unit,
     passwordVisible: Boolean,
     onPasswordVisibilityChange: (Boolean) -> Unit
@@ -197,14 +202,14 @@ fun ProfessionalInputFields(
     )
 
     GenericInputField(
-        value = uiState.areaDeAtuacao,
-        onValueChange = onAreaDeAtuacaoChange,
+        value = uiState.areaOfExpertise,
+        onValueChange = onAreaOfExpertiseChange,
         label = AppStrings.AREA_ATUACAO,
         keyboardType = KeyboardType.Text
     )
 
     DropdownMenuField(
-        value = uiState.selectedQualifications,
+        value = uiState.qualification,
         label = AppStrings.QUALIFICATION,
         onValueChange = onQualificationChange,
         options = uiState.qualifications,
@@ -215,5 +220,7 @@ fun ProfessionalInputFields(
 @Preview
 @Composable
 fun RegisterProfessionalScreenPreview() {
-    RegisterProfessionalScreen(onClick = {}, navController = NavController(LocalContext.current))
+    val navController = rememberNavController()
+    val registerViewModel: RegisterViewModel = viewModel(factory = RegisterViewModelFactory())
+    RegisterProfessionalScreen(navController = navController, registerViewModel = registerViewModel)
 }

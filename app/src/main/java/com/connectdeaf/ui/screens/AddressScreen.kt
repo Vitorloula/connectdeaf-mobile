@@ -40,7 +40,6 @@ import com.connectdeaf.ui.theme.GreyLighter
 import com.connectdeaf.ui.theme.PrimaryColor
 import com.connectdeaf.viewmodel.DrawerViewModel
 import com.connectdeaf.viewmodel.RegisterViewModel
-import com.connectdeaf.viewmodel.factory.RegisterViewModelFactory
 
 import kotlinx.coroutines.launch
 
@@ -112,14 +111,20 @@ fun AddressScreen(
                 // Botão de continuar
                 Button(
                     onClick = {
-                        registerViewModel.registerUser(context)
+                        if (uiState.isProfessionalFlow) {
+                            // Chama o método para criar um profissional
+                            registerViewModel.registerProfessional(context)
+                        } else {
+                            // Chama o método para criar um usuário
+                            registerViewModel.registerUser(context)
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    enabled = uiState.isFormValid, // Validação do formulário
+                    enabled = uiState.isAddressValid, // Validação do formulário
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.isFormValid) PrimaryColor else GreyLighter,
+                        containerColor = if (uiState.isAddressValid) PrimaryColor else GreyLighter,
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(6.dp)
