@@ -4,18 +4,13 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.connectdeaf.domain.model.Assessment
 import com.connectdeaf.domain.model.Service
 import com.connectdeaf.network.retrofit.ApiServiceFactory
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-
-data class Assessment(
-    val name: String,
-    val stars: Int,
-    val description: String
-)
 
 data class Address(
     val city: String,

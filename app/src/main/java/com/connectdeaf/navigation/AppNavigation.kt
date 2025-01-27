@@ -3,8 +3,10 @@ package com.connectdeaf.navigation
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.connectdeaf.ui.screens.AddressScreen
 import com.connectdeaf.ui.screens.FAQScreen
 import com.connectdeaf.ui.screens.HomeScreen
@@ -12,6 +14,7 @@ import com.connectdeaf.ui.screens.ProfileScreen
 import com.connectdeaf.ui.screens.RegisterInitialScreen
 import com.connectdeaf.ui.screens.RegisterProfessionalScreen
 import com.connectdeaf.ui.screens.RegisterScreen
+import com.connectdeaf.ui.screens.ServiceScreen
 import com.connectdeaf.ui.screens.ServicesScreen
 import com.connectdeaf.ui.screens.SignInScreen
 import com.connectdeaf.ui.screens.SuccessRegistrationScreen
@@ -39,6 +42,33 @@ fun AppNavigation(navController: NavHostController) {
         composable("profile") { ProfileScreen(navController = navController) }
         composable("services") { ServicesScreen(navController = navController) }
         composable("faq") { FAQScreen(navController = navController) }
+        composable(
+            route = "service/{serviceId}",
+            arguments = listOf(
+                navArgument("serviceId") {
+                    type = NavType.StringType // Define o tipo do argumento
+                    nullable = false          // Define se o argumento pode ser nulo
+                }
+            )
+        ) { backStackEntry ->
+            // Pegando o parâmetro passado via rota
+            val serviceId = backStackEntry.arguments?.getString("serviceId")
+            ServiceScreen(navController = navController, serviceId = serviceId.orEmpty())
+        }
+        composable(
+            route = "service/{serviceId}",
+            arguments = listOf(
+                navArgument("serviceId") {
+                    type = NavType.StringType // Define o tipo do argumento
+                    nullable = false          // Define se o argumento pode ser nulo
+                }
+                )
+        ) { backStackEntry ->
+            // Pegando o parâmetro passado via rota
+            val serviceId = backStackEntry.arguments?.getString("serviceId")
+            ServiceScreen(navController = navController, serviceId = serviceId.orEmpty())
+        }
+
 
     }
 }
