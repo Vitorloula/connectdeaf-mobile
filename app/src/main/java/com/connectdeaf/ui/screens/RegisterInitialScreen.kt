@@ -16,6 +16,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -28,6 +30,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.connectdeaf.R
@@ -35,10 +38,17 @@ import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.components.OptionCardButton
 import com.connectdeaf.ui.components.TopAppBar
 import com.connectdeaf.viewmodel.DrawerViewModel
+import com.connectdeaf.viewmodel.RegisterViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun RegisterInitialScreen(navController: NavHostController, drawerViewModel: DrawerViewModel = DrawerViewModel() ) {
+fun RegisterInitialScreen(
+    registerViewModel: RegisterViewModel = viewModel(),
+    navController: NavHostController,
+    drawerViewModel: DrawerViewModel = DrawerViewModel()
+) {
+    val uiState by registerViewModel.uiState.collectAsState()
+
     val drawerStateMenu = rememberDrawerState(DrawerValue.Closed)
     val drawerStateNotifications = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -120,8 +130,10 @@ fun RegisterInitialScreen(navController: NavHostController, drawerViewModel: Dra
                     Button(
                         onClick = {
                             if (selectedOption.value == "Cliente") {
+                                registerViewModel.updateFlow(false)
                                 navController.navigate("registerScreen")
                             } else {
+                                registerViewModel.updateFlow(true)
                                 navController.navigate("registerProfessionalScreen")
                             }
                         },

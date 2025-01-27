@@ -1,3 +1,4 @@
+import com.connectdeaf.domain.model.Professional
 import com.connectdeaf.domain.model.User
 
 data class RegisterUiState(
@@ -9,23 +10,34 @@ data class RegisterUiState(
     val isPhoneValid: Boolean = true,
     val isUserCreated: Boolean = false,
     val errorMessage: String? = null,
+
+    val isProfessionalFlow: Boolean = false,
+    val areaOfExpertise: String = "",
+    val qualification: String ="",
+    val qualifications: List<String> = emptyList(),
+
     val cep: String = "",
     val state: String = "",
     val city: String = "",
     val street: String = "",
     val neighborhood: String = "",
-    val number: String = "",         // Adicionado
-    val complement: String = "",    // Adicionado
+    val number: String = "",
+    val complement: String = "",
     val isCepValid: Boolean = true,
-    val user: User? = null
+
+    val user: User? = null,
+    val professional: Professional? = null
 ) {
     val isUserValid: Boolean
         get() = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() &&
                 password.isNotBlank()
 
-    val isFormValid: Boolean
+    val isProfessionalValid: Boolean
         get() = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() &&
-                password.isNotBlank() && cep.isNotBlank() && state.isNotBlank() &&
-                city.isNotBlank() && street.isNotBlank() && neighborhood.isNotBlank() &&
-                number.isNotBlank() && isCepValid
+                password.isNotBlank() && areaOfExpertise.isNotBlank() && qualification.isNotBlank()
+
+    val isAddressValid: Boolean
+        get() = cep.isNotBlank() && state.isNotBlank() && city.isNotBlank() &&
+                street.isNotBlank() && neighborhood.isNotBlank() && number.isNotBlank() && isCepValid
+
 }

@@ -30,8 +30,8 @@ fun AppNavigation(navController: NavHostController) {
 
 
         composable("loginScreen") { SignInScreen(navController = navController) }
-        composable("registerInitialScreen") { RegisterInitialScreen(navController = navController) }
-        composable("registerProfessionalScreen") { RegisterProfessionalScreen(navController = navController, onClick = {}) }
+        composable("registerInitialScreen") { RegisterInitialScreen(navController = navController, registerViewModel = registerViewModel) }
+        composable("registerProfessionalScreen") { RegisterProfessionalScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("registerScreen") { RegisterScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("addressScreen") { AddressScreen(navController = navController, registerViewModel = registerViewModel) } // Tela de Endereço
         composable("successRegistrationScreen") { SuccessRegistrationScreen(navController = navController) }
