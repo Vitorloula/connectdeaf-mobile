@@ -17,6 +17,9 @@ class ServicesViewModel(context: Context) : ViewModel() {
     private val _serviceList = mutableStateListOf<Service>()
     val serviceList: List<Service> get() = _serviceList
 
+    private val _isLoading = mutableStateOf(true) // Adicionado
+    val isLoading: State<Boolean> get() = _isLoading
+
     private val _searchQuery = mutableStateOf("")
     val searchQuery: State<String> get() = _searchQuery
 
@@ -37,6 +40,7 @@ class ServicesViewModel(context: Context) : ViewModel() {
 
     private fun loadServices(context: Context) {
         viewModelScope.launch {
+            _isLoading.value = true // Começa o carregamento
             try {
                 val apiServiceFactory = ApiServiceFactory(context)
                 val apiService = apiServiceFactory.serviceService
@@ -47,10 +51,11 @@ class ServicesViewModel(context: Context) : ViewModel() {
                 _serviceList.addAll(services)
             } catch (e: Exception) {
                 Log.e("ServicesViewModel", "Erro ao carregar serviços: ${e.message}", e)
+            } finally {
+                _isLoading.value = false // Finaliza o carregamento
             }
         }
     }
-
 
     fun onSearchQueryChange(newQuery: String) {
         _searchQuery.value = newQuery
@@ -77,14 +82,11 @@ class ServicesViewModel(context: Context) : ViewModel() {
     fun updateState(newState: String) {
         Log.d("ServicesViewModel", "Updating state to $newState")
         _selectedState.value = newState
-
     }
-
 
     fun updateCity(newCity: String) {
         Log.d("ServicesViewModel", "Updating city to $newCity")
         _selectedCity.value = newCity
-        // Atualiza a lista de serviços com base na cidade selecionada
     }
 }
 
