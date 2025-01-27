@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,32 +41,33 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.connectdeaf.ui.components.DatePickerDialog
 import com.connectdeaf.ui.components.DrawerMenu
-import com.connectdeaf.ui.components.ProcessStepsIndicator
 import com.connectdeaf.viewmodel.DrawerViewModel
-import com.connectdeaf.viewmodel.SchedulingViewModel
+import com.connectdeaf.viewmodel.AppointmentViewModel
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun SchedulingScreen(
+fun AppointmentScreen(
     navController: NavController,
     drawerViewModel: DrawerViewModel = viewModel(),
-    SchedulingViewModel: SchedulingViewModel = viewModel()
+    appointmentViewModel: AppointmentViewModel = viewModel(),
+    ServiceId: String,  // Mudado para String (ou mantenha Int conforme necessidade)
+    ProfessionalId: String  // Mudado para String (ou mantenha Int conforme necessidade)
 ) {
-    // Para lidar com eventos de navegação
     val context = LocalContext.current
-
-    // Para lidar com escopos de corrotina
     val scope = rememberCoroutineScope()
 
-    // Variáveis de estado para a data e horário selecionados
-    var selectedDate by remember { mutableStateOf("Selecione uma data") }
-    var selectedTime by remember { mutableStateOf("Selecione um horário") }
-    var showDatePickerDialog by remember { mutableStateOf(false) }
-    val currentStep = 1
+    val selectedDate = appointmentViewModel.selectedDate.value
+    val selectedTime = appointmentViewModel.selectedTime.value
+    val showDatePickerDialog = remember { mutableStateOf(false) }
 
-    // Opções de horário disponíveis
-    val availableTimes = listOf("08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00")
+    val availableTimes = appointmentViewModel.availableTimeSlots
+
+    LaunchedEffect(selectedDate) {
+        if (selectedDate != "Selecione uma data") {
+            appointmentViewModel.fetchTimeSlots(ProfessionalId, selectedDate, context)
+        }
+    }
 
     DrawerMenu(
         navController = navController,
@@ -82,7 +84,6 @@ fun SchedulingScreen(
                 )
             }
         ) { paddingValues ->
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -91,7 +92,6 @@ fun SchedulingScreen(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Text(
                     text = "Agendar Serviços",
                     fontSize = 20.sp,
@@ -112,7 +112,7 @@ fun SchedulingScreen(
 
                 Spacer(modifier = Modifier.height(25.dp))
 
-                // Seletor de data
+                // Seção de Seleção de Data
                 Text(
                     text = "Selecione um dia",
                     fontSize = 16.sp,
@@ -122,28 +122,27 @@ fun SchedulingScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Botão para abrir o DatePicker
                 Button(
-                    onClick = { showDatePickerDialog = true },
+                    onClick = { showDatePickerDialog.value = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(text = selectedDate)
                 }
 
-                // Dialog de data
-                if (showDatePickerDialog) {
+                if (showDatePickerDialog.value) {
                     DatePickerDialog(
-                        onDismissRequest = { showDatePickerDialog = false },
+                        onDismissRequest = { showDatePickerDialog.value = false },
                         onDateSelected = { year, month, dayOfMonth ->
-                            selectedDate = "$dayOfMonth/${month + 1}/$year"
-                            showDatePickerDialog = false
+                            val date = "$dayOfMonth/${month + 1}/$year"
+                            appointmentViewModel.selectDate(date)
+                            showDatePickerDialog.value = false
                         }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(25.dp))
 
-                // Seletor de horário
+                // Seção de Seleção de Horário
                 Text(
                     text = "Selecione um horário",
                     fontSize = 16.sp,
@@ -153,24 +152,26 @@ fun SchedulingScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Grid de horários disponíveis
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(3), // 3 colunas por linha
+                    columns = GridCells.Fixed(3),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(availableTimes) { time ->
-                        // Verifique se o item está selecionado
-                        val isSelected = selectedTime == time
+                    // Acessando a lista real de horários a partir do MutableState
+                    items(availableTimes.value) { timeSlot ->
+                        val isSelected = selectedTime == timeSlot.startTime // Supondo que o objeto `timeSlot` tenha a propriedade `time`
 
                         Card(
                             modifier = Modifier
                                 .padding(4.dp)
                                 .fillMaxWidth()
                                 .clickable {
-                                    selectedTime = if (isSelected) "" else time
+                                    if (isSelected) {
+                                        appointmentViewModel.selectTime("Selecione um horário")
+                                    } else {
+                                        appointmentViewModel.selectTime(timeSlot.startTime) // Supondo que `timeSlot` tenha a propriedade `time`
+                                    }
                                 },
                             shape = MaterialTheme.shapes.medium,
-
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.White
                             )
@@ -181,10 +182,9 @@ fun SchedulingScreen(
                                     .padding(8.dp)
                                     .fillMaxWidth()
                                     .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-
                             ) {
                                 Text(
-                                    text = time,
+                                    text = timeSlot.startTime, // Aqui também
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Normal,
                                     color = if (isSelected) Color.White else Color.Gray
@@ -196,7 +196,6 @@ fun SchedulingScreen(
 
                 Spacer(modifier = Modifier.height(25.dp))
 
-                // Exibe a data e horário selecionado
                 Text(
                     text = "Data selecionada: $selectedDate",
                     fontSize = 14.sp,
@@ -213,13 +212,19 @@ fun SchedulingScreen(
 
                 Spacer(modifier = Modifier.height(200.dp))
 
+                // Botão de Continuar
                 Button(
-                    onClick = { navController.navigate("") },
+                    onClick = {
+                        if (appointmentViewModel.canContinue()) {
+                            appointmentViewModel.postAppointment(ProfessionalId, ServiceId, context)
+                            navController.navigate("nextScreen") // Navegar para a próxima tela após o agendamento
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedDate != "Selecione uma data" && selectedTime != "Selecione um horário") MaterialTheme.colorScheme.primary
-                        else Color(0xFF999999),
-                    )
+                        containerColor = if (appointmentViewModel.canContinue()) MaterialTheme.colorScheme.primary else Color(0xFF999999),
+                    ),
+                    enabled = appointmentViewModel.canContinue()
                 ) {
                     Text("Continuar")
                 }
@@ -228,9 +233,6 @@ fun SchedulingScreen(
     }
 }
 
-@Preview
-@Composable
-fun SchedulingScreenPreview() {
-    SchedulingScreen(navController = rememberNavController())
-}
+
+
 
