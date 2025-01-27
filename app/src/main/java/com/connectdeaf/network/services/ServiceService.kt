@@ -11,4 +11,6 @@ interface ServiceService {
     @GET("api/services")
     suspend fun getServices(): List<Service>
 
+    @GET("api/services/{service_id}")
+    suspend fun getService(@Path("service_id") id: String): Service
 }
