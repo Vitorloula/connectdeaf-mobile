@@ -55,6 +55,19 @@ fun AppNavigation(navController: NavHostController) {
             val serviceId = backStackEntry.arguments?.getString("serviceId")
             ServiceScreen(navController = navController, serviceId = serviceId.orEmpty())
         }
+        composable(
+            route = "service/{serviceId}",
+            arguments = listOf(
+                navArgument("serviceId") {
+                    type = NavType.StringType // Define o tipo do argumento
+                    nullable = false          // Define se o argumento pode ser nulo
+                }
+                )
+        ) { backStackEntry ->
+            // Pegando o parâmetro passado via rota
+            val serviceId = backStackEntry.arguments?.getString("serviceId")
+            ServiceScreen(navController = navController, serviceId = serviceId.orEmpty())
+        }
 
 
     }
