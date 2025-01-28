@@ -14,6 +14,8 @@ import com.connectdeaf.ui.screens.ProfileScreen
 import com.connectdeaf.ui.screens.RegisterInitialScreen
 import com.connectdeaf.ui.screens.RegisterProfessionalScreen
 import com.connectdeaf.ui.screens.RegisterScreen
+import com.connectdeaf.ui.screens.ScheduleScreen
+import com.connectdeaf.ui.screens.AppointmentScreen
 import com.connectdeaf.ui.screens.RegisterServiceScreen
 import com.connectdeaf.ui.screens.ServiceProfessionalScreen
 import com.connectdeaf.ui.screens.ServiceScreen
@@ -35,6 +37,8 @@ fun AppNavigation(navController: NavHostController) {
 
 
         composable("loginScreen") { SignInScreen(navController = navController) }
+        composable("ScheduleScreen") { ScheduleScreen(navController = navController) }
+        composable("schedulingScreen") { AppointmentScreen(navController = navController, ServiceId = "", ProfessionalId = "") }
         composable("registerInitialScreen") { RegisterInitialScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("registerProfessionalScreen") { RegisterProfessionalScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("registerScreen") { RegisterScreen(navController = navController, registerViewModel = registerViewModel) }
