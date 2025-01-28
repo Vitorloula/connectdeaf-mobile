@@ -45,6 +45,7 @@ class ApiServiceFactory(context: Context) {
 
     val appointmentService: AppointmentService by lazy {
         sharedRetrofit.create(AppointmentService::class.java)
+    }
 
     val assessmentService: AssessmentService by lazy {
         sharedRetrofit.create(AssessmentService::class.java)
