@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,14 +21,21 @@ import com.connectdeaf.ui.components.ServiceCard
 import com.connectdeaf.viewmodel.DrawerViewModel
 import com.connectdeaf.ui.theme.AppStrings
 import com.connectdeaf.viewmodel.ServicesViewModel
+import com.connectdeaf.viewmodel.factory.ServicesViewModelFactory
 import kotlinx.coroutines.launch
 
 @Composable
 fun ServicesScreen(
-    viewModel: ServicesViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     navController: NavController,
     drawerViewModel: DrawerViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
+
+    val context = LocalContext.current
+    val viewModel: ServicesViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+        factory = ServicesViewModelFactory(context)
+    )
+
+    val isLoading = viewModel.isLoading.value
     val serviceList = viewModel.getPaginatedList()
     val currentPage = viewModel.currentPage.value
     val searchQuery = viewModel.searchQuery.value
@@ -77,86 +85,100 @@ fun ServicesScreen(
                         .padding(bottom = 16.dp)
                 )
 
-                // Search Bar
-                SearchBarField(
-                    searchQuery = TextFieldValue(searchQuery),
-                    onSearchQueryChange = { viewModel.onSearchQueryChange(it.text) },
-                    placeholder = "Pesquisar por serviço...",
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                // Dropdown Menus
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    DropdownMenuField(
-                        value = viewModel.selectedState.value,
-                        label = AppStrings.ESTADO,
-                        onValueChange = { selectedState -> viewModel.updateState(selectedState)},
-                        options = listOf("São Paulo", "Rio de Janeiro", "Bahia"),
-                        modifier = Modifier.weight(1f)
+                // Exibir ProgressIndicator enquanto carrega os dados
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = CustomBlue)
+                    }
+                } else {
+                    // Search Bar
+                    SearchBarField(
+                        searchQuery = TextFieldValue(searchQuery),
+                        onSearchQueryChange = { viewModel.onSearchQueryChange(it.text) },
+                        placeholder = "Pesquisar por serviço...",
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    DropdownMenuField(
-                        value = viewModel.selectedCity.value,
-                        label = AppStrings.CIDADE,
-                        onValueChange = { selectedCity -> viewModel.updateCity(selectedCity)},
-                        options = listOf("Campinas", "Niterói", "Salvador"),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    items(serviceList) { service ->
-                        ServiceCard(
-                            id = service.id,
-                            description = service.description,
-                            image = service.imageUrl,
-                            value = service.value,
-                            onClick = { id -> println("Clicked on service with id: $id") }
+                    // Dropdown Menus
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        DropdownMenuField(
+                            value = viewModel.selectedState.value,
+                            label = AppStrings.ESTADO,
+                            onValueChange = { selectedState -> viewModel.updateState(selectedState) },
+                            options = listOf("São Paulo", "Rio de Janeiro", "Bahia"),
+                            modifier = Modifier.weight(1f)
+                        )
+                        DropdownMenuField(
+                            value = viewModel.selectedCity.value,
+                            label = AppStrings.CIDADE,
+                            onValueChange = { selectedCity -> viewModel.updateCity(selectedCity) },
+                            options = listOf("Campinas", "Niterói", "Salvador"),
+                            modifier = Modifier.weight(1f)
                         )
                     }
-                }
 
-                // Botões de paginação
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(
-                        onClick = { viewModel.previousPage() },
-                        enabled = currentPage > 0,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = CustomBlue,
-                            contentColor = Color.White
-                        )
+                    // Lista de Serviços
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Anterior")
+                        items(serviceList) { service ->
+                            ServiceCard(
+                                id = service.id,
+                                name = service.name,
+                                description = service.description,
+                                image = null,
+                                value = service.value,
+                                onClick = { navController.navigate("service/${service.id}") }
+                            )
+                        }
                     }
 
-                    Text(
-                        text = "Página ${currentPage + 1} de $totalPages",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Button(
-                        onClick = { viewModel.nextPage() },
-                        enabled = (currentPage + 1) * 10 < viewModel.serviceList.size,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = CustomBlue,
-                            contentColor = Color.White
-                        )
+                    // Botões de Paginação
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Próximo")
+                        Button(
+                            onClick = { viewModel.previousPage() },
+                            enabled = currentPage > 0,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = CustomBlue,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text("Anterior")
+                        }
+
+                        Text(
+                            text = "Página ${currentPage + 1} de $totalPages",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
+                        Button(
+                            onClick = { viewModel.nextPage() },
+                            enabled = (currentPage + 1) * 10 < viewModel.serviceList.size,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = CustomBlue,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text("Próximo")
+                        }
                     }
                 }
             }

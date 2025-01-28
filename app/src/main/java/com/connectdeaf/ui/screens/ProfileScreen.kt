@@ -219,6 +219,7 @@ fun ProfileScreen(
                         profileState.value?.services!!.forEach { service ->
                             ServiceCard(
                                 id = service.id,
+                                name = service.name,
                                 description = service.description,
                                 image = R.drawable.doutor.toString(),
                                 value = service.value,
@@ -258,9 +259,9 @@ fun ProfileScreen(
                         ) {
                             profileState.value?.assessments!!.forEach { assessment ->
                                 AssessmentCard(
-                                    name = assessment.name,
-                                    stars = assessment.stars,
-                                    description = assessment.description
+                                    name = assessment.userName,
+                                    stars = assessment.rating,
+                                    description = assessment.text
                                 )
                             }
                         }

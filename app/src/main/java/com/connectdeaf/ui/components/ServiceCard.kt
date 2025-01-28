@@ -23,15 +23,15 @@ import com.connectdeaf.R
 @Composable
 fun ServiceCard(
     id: String,
+    name: String,
     description: String,
     image: String? = null,
-    value: String,
+    value: Double,
     onClick: (id: String) -> Unit
 ) {
-
     Card(
         modifier = Modifier
-            .clickable { onClick(id) }
+            .clickable { onClick(id.toString()) }
             .fillMaxWidth()
             .widthIn(max = 180.dp)
             .background(Color.White)
@@ -71,6 +71,7 @@ fun ServiceCard(
                 modifier = Modifier
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
+                Text(text = name, fontSize = 16.sp, color = Color.Black)
                 Text(text = "A partir de $value", fontSize = 14.sp, color = Color.Black)
                 Text(
                     text = description,
@@ -90,9 +91,10 @@ fun ServiceCard(
 private fun ServiceCardPreview() {
     ServiceCard(
         id = "1",
+        name = "Teste",
         description = "Oferecemos serviços de limpeza residencial e comercial com alta qualidade e preços competitivos.",
         image = null,
-        value = "R$ 150,00",
+        value = 150.00,
         onClick = { id -> println("Clicked on service with id: $id") }
     )
 }

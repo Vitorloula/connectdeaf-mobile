@@ -87,7 +87,7 @@ fun AssessmentCard(
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
-                color = Color.Gray,
+                color = Color.DarkGray,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
         }

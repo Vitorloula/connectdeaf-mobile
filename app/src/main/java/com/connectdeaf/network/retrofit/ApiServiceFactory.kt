@@ -5,6 +5,7 @@ import com.connectdeaf.data.repository.AuthRepository
 import com.connectdeaf.network.RetrofitInstance
 import com.connectdeaf.network.services.ApiService
 import com.connectdeaf.network.services.AppointmentService
+import com.connectdeaf.network.services.AssessmentService
 import com.connectdeaf.network.services.FAQApiService
 import com.connectdeaf.network.services.ProfessionalService
 import com.connectdeaf.network.services.ServiceService
@@ -19,7 +20,7 @@ class ApiServiceFactory(context: Context) {
         authRepository.getAuthToken()
     }
 
-    private val sharedRetrofit: Retrofit = RetrofitInstance.createRetrofit("http://10.0.2.2:8080", getToken)
+    private val sharedRetrofit: Retrofit = RetrofitInstance.createRetrofit("https://connectdeaf-backend-dev.azurewebsites.net/", getToken)
 
     private val aiRetrofit: Retrofit = RetrofitInstance.createRetrofit("https://webapp-connectdeaf-dev.azurewebsites.net/", getToken)
 
@@ -45,5 +46,9 @@ class ApiServiceFactory(context: Context) {
 
     val appointmentService: AppointmentService by lazy {
         sharedRetrofit.create(AppointmentService::class.java)
+
+    val assessmentService: AssessmentService by lazy {
+        sharedRetrofit.create(AssessmentService::class.java)
+
     }
 }

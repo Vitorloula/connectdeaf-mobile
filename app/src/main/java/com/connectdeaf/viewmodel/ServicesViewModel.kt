@@ -1,5 +1,6 @@
 package com.connectdeaf.viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
@@ -7,12 +8,17 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.connectdeaf.domain.model.Service
+import com.connectdeaf.network.retrofit.ApiServiceFactory
 import kotlinx.coroutines.launch
 
-class ServicesViewModel : ViewModel() {
+class ServicesViewModel(context: Context) : ViewModel() {
 
     private val _serviceList = mutableStateListOf<Service>()
     val serviceList: List<Service> get() = _serviceList
+
+    private val _isLoading = mutableStateOf(true) // Adicionado
+    val isLoading: State<Boolean> get() = _isLoading
 
     private val _searchQuery = mutableStateOf("")
     val searchQuery: State<String> get() = _searchQuery
@@ -28,26 +34,26 @@ class ServicesViewModel : ViewModel() {
     private val _selectedCity = mutableStateOf("")
     val selectedCity: State<String> = _selectedCity
 
-    // Busca e atualização dos serviços (mockado aqui)
     init {
-        loadServices()
+        loadServices(context)
     }
 
-    private fun loadServices() {
+    private fun loadServices(context: Context) {
         viewModelScope.launch {
-            // Simulação de carregamento de dados
-            val mockData = List(25) { index ->
-                Service(
-                    id = "service_$index",
-                    name = "Serviço ${index + 1}",
-                    description = "Descrição do Serviço ${index + 1}",
-                    category = listOf("Categoria A", "Categoria B"),
-                    value = "R$ ${(100 + index * 10)}",
-                    imageUrl = "https://via.placeholder.com/150"
-                )
+            _isLoading.value = true // Começa o carregamento
+            try {
+                val apiServiceFactory = ApiServiceFactory(context)
+                val apiService = apiServiceFactory.serviceService
+
+                val services = apiService.getServices()
+
+                _serviceList.clear()
+                _serviceList.addAll(services)
+            } catch (e: Exception) {
+                Log.e("ServicesViewModel", "Erro ao carregar serviços: ${e.message}", e)
+            } finally {
+                _isLoading.value = false // Finaliza o carregamento
             }
-            _serviceList.clear()
-            _serviceList.addAll(mockData)
         }
     }
 
@@ -76,14 +82,11 @@ class ServicesViewModel : ViewModel() {
     fun updateState(newState: String) {
         Log.d("ServicesViewModel", "Updating state to $newState")
         _selectedState.value = newState
-
     }
-
 
     fun updateCity(newCity: String) {
         Log.d("ServicesViewModel", "Updating city to $newCity")
         _selectedCity.value = newCity
-        // Atualiza a lista de serviços com base na cidade selecionada
     }
 }
 
