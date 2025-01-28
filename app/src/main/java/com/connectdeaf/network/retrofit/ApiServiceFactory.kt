@@ -2,7 +2,6 @@ package com.connectdeaf.network.retrofit
 
 import android.content.Context
 import com.connectdeaf.data.repository.AuthRepository
-import com.connectdeaf.network.RetrofitInstance
 import com.connectdeaf.network.services.ApiService
 import com.connectdeaf.network.services.AssessmentService
 import com.connectdeaf.network.services.FAQApiService
