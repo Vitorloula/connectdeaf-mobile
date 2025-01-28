@@ -1,5 +1,7 @@
 import com.connectdeaf.domain.model.Professional
 import com.connectdeaf.domain.model.User
+import java.time.Duration
+import java.time.LocalTime
 
 data class RegisterUiState(
     val name: String = "",
@@ -15,6 +17,9 @@ data class RegisterUiState(
     val areaOfExpertise: String = "",
     val qualification: String ="",
     val qualifications: List<String> = emptyList(),
+    val workStartTime: LocalTime = LocalTime.now(),
+    val workEndTime: LocalTime = LocalTime.now(),
+    val breakDuration: String = "",
 
     val cep: String = "",
     val state: String = "",
@@ -34,7 +39,8 @@ data class RegisterUiState(
 
     val isProfessionalValid: Boolean
         get() = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() &&
-                password.isNotBlank() && areaOfExpertise.isNotBlank() && qualification.isNotBlank()
+                password.isNotBlank() && areaOfExpertise.isNotBlank() && qualification.isNotBlank() &&
+                workStartTime.isBefore(workEndTime) && breakDuration.isNotBlank()
 
     val isAddressValid: Boolean
         get() = cep.isNotBlank() && state.isNotBlank() && city.isNotBlank() &&
