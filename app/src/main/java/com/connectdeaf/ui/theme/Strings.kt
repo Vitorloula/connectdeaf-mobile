@@ -13,4 +13,8 @@ object AppStrings {
     const val WORK_START_TIME = "Hora de início de trabalho"
     const val WORK_END_TIME = "Hora de término de trabalho"
     const val BREAK_DURATION = "Duração do trabalho em minutos"
+    const val PRICE_SERVICE = "Preço"
+    const val DESCRIPTION_SERVICE = "Descrição"
+    const val CATEGORY_SERVICE = "Categoria"
+    const val NAME_SERVICE = "Nome do serviço"
 }

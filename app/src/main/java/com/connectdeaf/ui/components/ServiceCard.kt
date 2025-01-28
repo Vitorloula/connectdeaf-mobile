@@ -4,8 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -19,6 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.connectdeaf.R
+import com.connectdeaf.ui.theme.ErrorColor
+import com.connectdeaf.ui.theme.PrimaryColor
 
 @Composable
 fun ServiceCard(
@@ -27,7 +34,11 @@ fun ServiceCard(
     description: String,
     image: String? = null,
     value: Double,
-    onClick: (id: String) -> Unit
+    onClick: (id: String) -> Unit,
+    isProfessional: Boolean = false,
+    onDeleteClick: (id: String) -> Unit = {},
+    onEditClick: (id: String) -> Unit = {}
+
 ) {
     Card(
         modifier = Modifier
@@ -41,7 +52,7 @@ fun ServiceCard(
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column {
-            // Image or Placeholder
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -80,6 +91,32 @@ fun ServiceCard(
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
+            }
+
+            if (isProfessional) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 15.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    IconButton(onClick = { onEditClick(id) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = "Editar",
+                            tint = PrimaryColor,
+
+                            )
+                    }
+                    IconButton(onClick = { onDeleteClick(id) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = "Deletar",
+                            tint = ErrorColor,
+                            modifier = Modifier.size(50.dp)
+                        )
+                    }
+                }
             }
         }
     }

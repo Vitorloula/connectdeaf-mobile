@@ -2,8 +2,8 @@ package com.connectdeaf.network.retrofit
 
 import android.content.Context
 import com.connectdeaf.data.repository.AuthRepository
-import com.connectdeaf.network.RetrofitInstance
 import com.connectdeaf.network.services.ApiService
+import com.connectdeaf.network.services.AppointmentService
 import com.connectdeaf.network.services.AssessmentService
 import com.connectdeaf.network.services.FAQApiService
 import com.connectdeaf.network.services.ProfessionalService
@@ -43,7 +43,11 @@ class ApiServiceFactory(context: Context) {
         aiRetrofit.create(FAQApiService::class.java)
     }
 
+    val appointmentService: AppointmentService by lazy {
+        sharedRetrofit.create(AppointmentService::class.java)
+
     val assessmentService: AssessmentService by lazy {
         sharedRetrofit.create(AssessmentService::class.java)
+
     }
 }
