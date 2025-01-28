@@ -10,4 +10,7 @@ object AppStrings {
     const val QUALIFICATION = "Qualificação"
     const val CIDADE = "Cidade"
     const val ESTADO = "Estado"
+    const val WORK_START_TIME = "Hora de início de trabalho"
+    const val WORK_END_TIME = "Hora de término de trabalho"
+    const val BREAK_DURATION = "Duração do trabalho em minutos"
 }
