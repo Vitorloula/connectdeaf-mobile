@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.LocalTime
 
 class RegisterViewModel(
     private val userRepository: UserRepository,
@@ -67,6 +69,18 @@ class RegisterViewModel(
         _uiState.update { it.copy(qualification = newQualification) }
     }
 
+    fun onWorkStartTimeChange(newWorkStartTime: LocalTime) {
+        _uiState.update { it.copy(workStartTime = newWorkStartTime) }
+    }
+
+    fun onWorkEndTimeChange(newWorkEndTime: LocalTime) {
+        _uiState.update { it.copy(workEndTime = newWorkEndTime) }
+    }
+
+    fun onBreakDurationChange(newBreakDuration: String) {
+        _uiState.update { it.copy(breakDuration = newBreakDuration) }
+    }
+
     // Atualiza os dados do endereço
     fun onCepChange(newCep: String) {
         val filteredCep = newCep.filter { it.isDigit() }.take(8)
@@ -112,23 +126,23 @@ class RegisterViewModel(
     fun registerProfessional(context: Context) {
         val state = _uiState.value
 
-        // Validar todos os campos
         if (!state.isUserValid) {
             Log.e("RegisterViewModel", "Formulário inválido. Verifique os campos obrigatórios.")
             return
         }
 
-        // Criar o usuário
         val professional = Professional(
             name = state.name,
             email = state.email,
             password = state.password,
             phoneNumber = state.phone,
             areaOfExpertise = state.areaOfExpertise,
-            qualification = state.qualification
+            qualification = state.qualification,
+            workStartTime = state.workStartTime.toString(),
+            workEndTime = state.workEndTime.toString(),
+            breakDuration = Duration.ofMinutes(state.breakDuration.toLong()).toString()
         )
 
-        // Criar o endereço
         val addresses = listOf(
             AddressRequest(
                 cep = state.cep,
@@ -136,13 +150,11 @@ class RegisterViewModel(
                 city = state.city,
                 street = state.street,
                 neighborhood = state.neighborhood,
-                number = state.number,         // Adicionado
-                complement = state.complement  // Adicionado
+                number = state.number,
+                complement = state.complement
             )
         )
 
-
-        // Criar a solicitação final para enviar à API
         val professionalRequest = ProfessionalRequest(
             name = professional.name,
             email = professional.email,
@@ -150,12 +162,13 @@ class RegisterViewModel(
             phoneNumber = professional.phoneNumber,
             areaOfExpertise = professional.areaOfExpertise,
             qualification = professional.qualification,
+            workStartTime = professional.workStartTime,
+            workEndTime = professional.workEndTime,
+            breakDuration = professional.breakDuration,
             addresses = addresses
         )
 
         Log.d("RegisterViewModel", "Dados do ProfessionalRequest: $professionalRequest")
-
-        // Enviar para a API
         sendProfessionalRequest(professionalRequest, context)
     }
 
