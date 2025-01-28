@@ -13,7 +13,8 @@ class AppointmentNotificationWorker(
 
     override fun doWork(): Result {
         val title = inputData.getString("title") ?: "Lembrete de Agendamento"
-        val message = inputData.getString("message") ?: "Você tem um compromisso agendado em breve!"
+        val message = inputData.getString("message") ?: "Você tem um compromisso agendado!"
+        val notificationId = System.currentTimeMillis().toInt()
 
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -26,7 +27,7 @@ class AppointmentNotificationWorker(
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(1, notification)
+        notificationManager.notify(notificationId, notification)
 
         return Result.success()
     }
