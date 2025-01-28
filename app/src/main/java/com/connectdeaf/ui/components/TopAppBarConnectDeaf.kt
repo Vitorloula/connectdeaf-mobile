@@ -26,8 +26,8 @@ import com.connectdeaf.R
 @Composable
 fun TopAppBar(
     navController: NavController,
-    onOpenDrawerNotifications: () -> Unit,
-    onOpenDrawerMenu: () -> Unit,
+    onOpenDrawerNotifications: (() -> Unit)? = null,
+    onOpenDrawerMenu: (() -> Unit)? = null,
     showBackButton: Boolean = false,
     isBot: Boolean = false,
     isRegistration: Boolean = false,
@@ -56,7 +56,9 @@ fun TopAppBar(
                 }
             } else if (!isRegistration) {
                 IconButton(onClick = {
-                    onOpenDrawerNotifications()
+                    if (onOpenDrawerNotifications != null) {
+                        onOpenDrawerNotifications()
+                    }
                 }) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
@@ -68,15 +70,17 @@ fun TopAppBar(
         },
         actions = {
             if (!showBackButton && !isRegistration) {
-                IconButton(
-                    onClick =
-                    onOpenDrawerMenu
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = "Menu",
-                        tint = Color.White
-                    )
+                if (onOpenDrawerMenu != null) {
+                    IconButton(
+                        onClick =
+                        onOpenDrawerMenu
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Menu",
+                            tint = Color.White
+                        )
+                    }
                 }
             }
         },
