@@ -31,7 +31,7 @@ fun ServiceScreen(
     navController: NavController,
     serviceId: String,
     viewModel: ServiceViewModel = viewModel(),
-    drawerViewModel: DrawerViewModel = viewModel()
+    drawerViewModel: DrawerViewModel = viewModel(),
 ) {
     val serviceState = viewModel.serviceState.collectAsState()
     val assessmentState = viewModel.serviceAssessment.collectAsState()
@@ -103,16 +103,20 @@ fun ServiceScreen(
 @Composable
 fun CardProfile(
     name: String, city: String, state: String, description: String,
-    imageUrl: String?
+    imageUrl: String?,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -120,15 +124,29 @@ fun CardProfile(
                 painter = if (imageUrl.isNullOrEmpty()) painterResource(id = R.drawable.ic_user_placeholder)
                 else rememberAsyncImagePainter(model = imageUrl),
                 contentDescription = "Avatar",
-                modifier = Modifier.size(64.dp).background(Color.Gray, CircleShape).padding(8.dp)
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(Color.Gray, CircleShape)
+                    .padding(8.dp)
             )
 
             Column(
-                modifier = Modifier.padding(start = 16.dp).weight(1f),
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(text = name, style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(text = "$city - $state", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "$city - $state",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Text(text = description, style = MaterialTheme.typography.bodySmall)
             }
 
@@ -137,10 +155,12 @@ fun CardProfile(
 }
 
 @Composable
-fun CardDetailService(title: String, description: String, category: List<String>,
-                      value: String,
-                      navController: NavController,
-                      professionalId: String, serviceId: String) {
+fun CardDetailService(
+    title: String, description: String, category: List<String>,
+    value: String,
+    navController: NavController,
+    professionalId: String, serviceId: String,
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -155,7 +175,9 @@ fun CardDetailService(title: String, description: String, category: List<String>
                 painter = rememberAsyncImagePainter("https://picsum.photos/800/600"),
                 contentDescription = "Service Image",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth().height(200.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
             )
 
             Text(text = title, style = MaterialTheme.typography.titleMedium)
@@ -169,12 +191,17 @@ fun CardDetailService(title: String, description: String, category: List<String>
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             )
 
             {
-                Button(onClick = { navController.navigate("appointmentScreen/${serviceId}/${professionalId}/${value}") }) {
+                Button(
+                    onClick = { navController.navigate("appointmentScreen/${serviceId}/${professionalId}/${value}") },
+                    modifier = Modifier.weight(1f),
+                ) {
                     Icon(Icons.Default.DateRange, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "Agendar")
@@ -202,7 +229,9 @@ fun SectionCardService(title: String, content: @Composable () -> Unit) {
 @Composable
 fun ChipService(label: String) {
     Box(
-        modifier = Modifier.background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50)).padding(8.dp)
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+            .padding(8.dp)
     ) {
         Text(text = label, color = Color.White, style = MaterialTheme.typography.bodySmall)
     }
