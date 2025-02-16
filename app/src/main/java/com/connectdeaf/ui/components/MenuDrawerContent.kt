@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
@@ -30,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.connectdeaf.data.repository.AuthRepository
+import com.connectdeaf.data.repository.FirebaseRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -40,7 +43,9 @@ fun MenuDrawerContent(
     scope: CoroutineScope
 ) {
     val context = LocalContext.current
-    val idProfessional = AuthRepository(context).getProfessionalId()
+    val authRepository = AuthRepository(context)
+    val firebaseRepository = FirebaseRepository()
+    val userRoles = authRepository.getRoles()
 
     Surface(
         modifier = Modifier
@@ -120,17 +125,19 @@ fun MenuDrawerContent(
                     .fillMaxWidth()
                     .clickable {
                         scope.launch {
-                            if (idProfessional != "") {
-                                navController.navigate("serviceProfessionalScreen") {
-                                    launchSingleTop = true
+                            if (userRoles != null) {
+                                if (userRoles.contains("ROLE_PROFESSIONAL")) {
+                                    navController.navigate("serviceProfessionalScreen") {
+                                        launchSingleTop = true
+                                    }
+                                    drawerState.close()
+                                } else {
+                                    navController.navigate("services") {
+                                        launchSingleTop = true
+                                    }
+                                    drawerState.close()
                                 }
-                                drawerState.close()
-                            }else {
-                                navController.navigate("services") {
-                                    launchSingleTop = true
-                                }
-                                drawerState.close()
-                        }
+                            }
 
                         }
                     }
@@ -195,6 +202,58 @@ fun MenuDrawerContent(
                 )
                 Text(
                     text = "FAQ",
+                    color = Color.White
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        scope.launch {
+                            navController.navigate("chatList") {
+                                launchSingleTop = true
+                            }
+                            drawerState.close()
+                        }
+                    }
+                    .padding(vertical = 16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = "ChatList",
+                    modifier = Modifier.padding(end = 24.dp),
+                    tint = Color.White
+                )
+                Text(
+                    text = "Chats",
+                    color = Color.White
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        scope.launch {
+                            authRepository.logout()
+                            firebaseRepository.logout()
+                            navController.navigate("loginScreen") {
+                                launchSingleTop = true
+                            }
+                            drawerState.close()
+                        }
+                    }
+                    .padding(vertical = 16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Logout",
+                    modifier = Modifier.padding(end = 24.dp),
+                    tint = Color.White
+                )
+                Text(
+                    text = "Logout",
                     color = Color.White
                 )
             }
