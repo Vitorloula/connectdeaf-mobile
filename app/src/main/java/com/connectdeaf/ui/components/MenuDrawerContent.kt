@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.connectdeaf.data.repository.AuthRepository
+import com.connectdeaf.data.repository.FirebaseRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -43,6 +44,7 @@ fun MenuDrawerContent(
 ) {
     val context = LocalContext.current
     val authRepository = AuthRepository(context)
+    val firebaseRepository = FirebaseRepository()
     val userRoles = authRepository.getRoles()
 
     Surface(
@@ -235,6 +237,7 @@ fun MenuDrawerContent(
                     .clickable {
                         scope.launch {
                             authRepository.logout()
+                            firebaseRepository.logout()
                             navController.navigate("loginScreen") {
                                 launchSingleTop = true
                             }
