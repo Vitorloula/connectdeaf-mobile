@@ -8,6 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.connectdeaf.ui.screens.AddressScreen
+import com.connectdeaf.ui.screens.chat.ChatListScreen
+import com.connectdeaf.ui.screens.chat.ChatScreen
 import com.connectdeaf.ui.screens.FAQScreen
 import com.connectdeaf.ui.screens.HomeScreen
 import com.connectdeaf.ui.screens.ProfileScreen
@@ -97,6 +99,19 @@ fun AppNavigation(navController: NavHostController) {
 
 
 
-
+        composable("chatList") { ChatListScreen(navController) }
+        composable(
+            route = "chat/{id}",
+            arguments = listOf(
+                navArgument(name = "id") {
+                    type = NavType.StringType
+                },
+            )
+        ) { backstackEntry ->
+            val id = backstackEntry.arguments?.getString("id")
+            if (id != null) {
+                ChatScreen(navController, id = id)
+            }
+        }
     }
 }
