@@ -49,6 +49,7 @@ import com.connectdeaf.ui.components.DropdownMenuField
 import com.connectdeaf.ui.components.GenericInputField
 import com.connectdeaf.ui.components.HeaderSectionRegister
 import com.connectdeaf.ui.components.ProfilePictureSection
+import com.connectdeaf.ui.components.TopAppBar
 import com.connectdeaf.ui.theme.AppStrings
 import com.connectdeaf.ui.theme.PrimaryColor
 import com.connectdeaf.utils.PhoneVisualTransformation
@@ -82,7 +83,7 @@ fun RegisterProfessionalScreen(
     ) {
         Scaffold(
             topBar = {
-                com.connectdeaf.ui.components.TopAppBar(
+                TopAppBar(
                     onOpenDrawerMenu = { scope.launch { drawerStateMenu.open() } },
                     onOpenDrawerNotifications = { scope.launch { drawerStateNotifications.open() } },
                     navController = navController,
