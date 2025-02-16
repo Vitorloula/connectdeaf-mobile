@@ -37,9 +37,7 @@ fun ServicesScreen(
 
     val isLoading = viewModel.isLoading.value
     val serviceList = viewModel.getPaginatedList()
-    val currentPage = viewModel.currentPage.value
     val searchQuery = viewModel.searchQuery.value
-    val totalPages = (viewModel.serviceList.size - 1) / 10 + 1
 
     val CustomBlue = Color(0xFF3D66CC)
 
@@ -85,7 +83,6 @@ fun ServicesScreen(
                         .padding(bottom = 16.dp)
                 )
 
-                // Exibir ProgressIndicator enquanto carrega os dados
                 if (isLoading) {
                     Box(
                         modifier = Modifier
@@ -143,41 +140,6 @@ fun ServicesScreen(
                                 value = service.value,
                                 onClick = { navController.navigate("service/${service.id}") }
                             )
-                        }
-                    }
-
-                    // Botões de Paginação
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Button(
-                            onClick = { viewModel.previousPage() },
-                            enabled = currentPage > 0,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = CustomBlue,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text("Anterior")
-                        }
-
-                        Text(
-                            text = "Página ${currentPage + 1} de $totalPages",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        Button(
-                            onClick = { viewModel.nextPage() },
-                            enabled = (currentPage + 1) * 10 < viewModel.serviceList.size,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = CustomBlue,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text("Próximo")
                         }
                     }
                 }

@@ -36,9 +36,21 @@ fun AppNavigation(navController: NavHostController) {
         navController = navController,
         startDestination = "registerInitialScreen" // Esta será a primeira tela a ser exibida
     ) {
+
+        composable(
+            route = "appointmentScreen/{serviceId}/{professionalId}/{value}",
+            arguments = listOf(
+                navArgument("serviceId") { type = NavType.StringType },
+                navArgument("professionalId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
+            val professionalId = backStackEntry.arguments?.getString("professionalId") ?: ""
+            val value = backStackEntry.arguments?.getString("value") ?: ""
+            AppointmentScreen(navController = navController, serviceId = serviceId, professionalId = professionalId, value = value)
+        }
         composable("loginScreen") { SignInScreen(navController = navController) }
         composable("ScheduleScreen") { ScheduleScreen(navController = navController) }
-        composable("schedulingScreen") { AppointmentScreen(navController = navController, ServiceId = "", ProfessionalId = "") }
         composable("registerInitialScreen") { RegisterInitialScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("registerProfessionalScreen") { RegisterProfessionalScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("registerScreen") { RegisterScreen(navController = navController, registerViewModel = registerViewModel) }

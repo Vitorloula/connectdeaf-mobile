@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -171,10 +172,12 @@ fun RegisterInputFields(
         label = AppStrings.CATEGORY_SERVICE
     )
     GenericInputField(
-        value = uiState.price.toString(),
+        value = uiState.price,
         onValueChange = onPriceChange,
-        label = AppStrings.PRICE_SERVICE
+        label = AppStrings.PRICE_SERVICE,
+        keyboardType = KeyboardType.Number
     )
+
 }
 
 @Composable
