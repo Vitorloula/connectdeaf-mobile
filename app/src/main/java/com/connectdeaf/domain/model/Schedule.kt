@@ -6,7 +6,7 @@ import java.util.UUID
 
 data class ScheduleItem(
     val appointmentId: UUID,
-    val serviceId: UUID,
+    val serviceId: String,
     val serviceName: String,
     val clientName: String,
     val professionalName: String,

@@ -130,7 +130,7 @@ fun calculateMonthlyRevenue(appointments: List<Appointment>): List<MonthlyRevenu
     // Agrupa os appointments por ano-mês e soma os valores
     val revenueByMonth = appointments.groupBy { appointment ->
         // Converte a data para LocalDate e extrai o ano-mês
-        val date = LocalDate.parse(appointment.schedule.date, formatter)
+        val date = LocalDate.parse(appointment.schedule?.date, formatter)
         date.year.toString() + "-" + date.monthValue.toString().padStart(2, '0')
     }.map { (month, appointmentsInMonth) ->
         MonthlyRevenue(
