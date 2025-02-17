@@ -19,6 +19,9 @@ interface AppointmentService {
         @Body appointmentRequest: AppointmentRequest
     )
 
+    @GET("api/appointments/professional/{professionalId}")
+    suspend fun getAppointmentsByProfessionalId(@Path("professionalId") userId: String): List<Appointment>
+
     @DELETE("api/appointments/{appointmentId}")
     suspend fun deleteAppointment(
         @Path("appointmentId") appointmentId: String

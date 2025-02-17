@@ -1,10 +1,19 @@
 package com.connectdeaf.viewmodel
 
 
+import com.connectdeaf.domain.model.Service
 import java.util.UUID
 
+data class Schedule(
+    val id: UUID,
+    val date: String,
+    val startTime: String,
+    val endTime: String,
+    val professionalId: UUID
+)
 
 data class Appointment(
+
     val id: UUID? = null,
     val customer: Customer,
     val professional: Professional,
