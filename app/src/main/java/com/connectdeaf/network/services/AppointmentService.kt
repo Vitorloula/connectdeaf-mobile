@@ -13,9 +13,6 @@ import retrofit2.http.Query
 interface AppointmentService {
     @POST("api/appointments")
     suspend fun postAppointment(
-        @Query("customerId") customerId: String,
-        @Query("professionalId") professionalId: String,
-        @Query("serviceId") serviceId: String,
         @Body appointmentRequest: AppointmentRequest
     )
 
