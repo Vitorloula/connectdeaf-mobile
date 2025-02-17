@@ -33,6 +33,7 @@ import com.connectdeaf.data.repository.AuthRepository
 import com.connectdeaf.ui.components.AssessmentCard
 import com.connectdeaf.ui.components.ChipComponent
 import com.connectdeaf.ui.components.DrawerMenu
+import com.connectdeaf.ui.components.MonthlyRevenueChart
 import com.connectdeaf.ui.components.ServiceCard
 import com.connectdeaf.ui.theme.ConnectDeafTheme
 import com.connectdeaf.viewmodel.DrawerViewModel
@@ -46,6 +47,7 @@ fun ProfileScreen(
     drawerViewModel: DrawerViewModel = viewModel()
 ) {
     val profileState = viewModel.profile.collectAsState()
+    val appointments = viewModel.appointments.collectAsState().value
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -59,8 +61,9 @@ fun ProfileScreen(
 
     // Chama o fetch com userId e role
     LaunchedEffect(userId, role) {
-        if (role == "professional") {
+        if (role == "ROLE_PROFESSIONAL") {
             viewModel.fetchProfile(professionalId, role, context)
+            viewModel.fetchAppointments(professionalId, context)
         } else {
             viewModel.fetchProfile(userId, role, context)
         }
@@ -129,16 +132,30 @@ fun ProfileScreen(
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            profileState.value?.user?.name.let {
-                                if (it != null) {
-                                    Text(
-                                        text = it,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+                            if(role == "ROLE_PROFESSIONAL"){
+                                profileState.value?.name.let {
+                                    if (it != null) {
+                                        Text(
+                                            text = it,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }else{
+                                profileState.value?.user?.name.let {
+                                    if (it != null) {
+                                        Text(
+                                            text = it,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
                             }
+
                             Row {
                                 Image(
                                     painter = painterResource(id = R.drawable.location_icon),
@@ -146,11 +163,20 @@ fun ProfileScreen(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "${profileState.value?.user?.addresses?.first()?.city}, ${profileState.value?.user?.addresses?.first()?.state}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Blue
-                                )
+                                if(role == "ROLE_PROFESSIONAL"){
+                                    Text(
+                                        text = "${profileState.value?.addresses?.first()?.city}, ${profileState.value?.addresses?.first()?.state}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Blue
+                                    )
+                                }else{
+                                    Text(
+                                        text = "${profileState.value?.user?.addresses?.first()?.city}, ${profileState.value?.user?.addresses?.first()?.state}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Blue
+                                    )
+                                }
+
                             }
                             Row {
                                 Image(
@@ -246,6 +272,12 @@ fun ProfileScreen(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (role == "ROLE_PROFESSIONAL") {
+                    // Gráfico de desempenho
+                    MonthlyRevenueChart(appointments = appointments)
+                }
                 // Avaliações (o título muda conforme o tipo de perfil)
                 SectionCard(title = if (role == "ROLE_PROFESSIONAL") "Avaliações sobre o profissional" else "Avaliações") {
                     if (profileState.value?.assessments?.isNotEmpty() == true) {
