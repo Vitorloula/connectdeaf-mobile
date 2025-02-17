@@ -50,14 +50,6 @@ data class Service(
     val value: Double
 )
 
-data class Schedule(
-    val id: UUID,
-    val professionalId: UUID,
-    val date: String,
-    val startTime: String,
-    val endTime: String
-)
-
 data class UserAdress(
     val street: String,
     val city: String,
