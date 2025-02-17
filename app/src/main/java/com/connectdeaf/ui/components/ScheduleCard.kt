@@ -1,5 +1,6 @@
 package com.connectdeaf.ui.components
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,126 +12,373 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.sharp.Notifications
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.connectdeaf.ui.screens.ScheduleItem
+import androidx.navigation.NavController
+import com.connectdeaf.domain.model.ScheduleItem
+import com.connectdeaf.viewmodel.NotificationViewModel
+import com.connectdeaf.viewmodel.ScheduleViewModel
 
 @Composable
-fun ScheduleCard(schedule: ScheduleItem) {
+fun ScheduleCard(
+    navController: NavController,
+    schedule: ScheduleItem,
+    role: String,
+    scheduleViewModel: ScheduleViewModel,
+    notificationViewModel: NotificationViewModel
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+    var actionType by remember { mutableStateOf("") }
+
+    var status by remember { mutableStateOf(schedule.status) }
+    var statusColor by remember { mutableStateOf(schedule.statusColor) }
+
+    val cardHeight by animateDpAsState(targetValue = if (expanded) 240.dp else 190.dp, label = "")
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(125.dp),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
+            .height(cardHeight)
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        onClick = {
+            if (role == "[ROLE_PROFESSIONAL]" && schedule.status == "Pendente") {
+                expanded = !expanded
+            }
 
-
+            if (role == "[ROLE_USER]") {
+                navController.navigate("service/${schedule.serviceId}")
+            }
+        }
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(4.dp)
-        ) {
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.weight(1f)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
+                Text(
+                    text = schedule.serviceName,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (role == "[ROLE_USER]" && schedule.status == "Rejeitado" || schedule.status == "Pendente") {
+                    IconButton(onClick = {
+                        actionType = "delete"
+                        showConfirmationDialog = true
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Build,
-                        contentDescription = "Service Icon",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(16.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = schedule.serviceName,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    }, modifier = Modifier.size(20.dp)) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            contentDescription = "Notifications Icon",
+                            tint = Color.Black
+                        )
+                    }
+                } else {
+                    IconButton(onClick = {
+                        notificationViewModel.sendNotification(context, notificationViewModel.createNotification(
+                            schedule
+                        ))
+                    }, modifier = Modifier.size(20.dp)) {
+                        Icon(
+                            imageVector = Icons.Sharp.Notifications,
+                            contentDescription = "Notifications Icon",
+                            tint = Color.Black
+                        )
+                    }
                 }
+            }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp)
-                ) {
+
+
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Cliente e Data do Agendamento
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Client Icon",
                         tint = Color.Gray,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
-
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = schedule.clientName,
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = Color.Black
                     )
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(8.dp)
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = "Date Icon",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = schedule.date,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Status do Agendamento
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    var statusFilter = status
+                    var statusColorFilter = statusColor
+
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = "Status Icon",
-                        tint = when (schedule.status) {
-                            "Concluído" -> Color.Green
-                            "Cancelado" -> Color.Red
-                            else -> Color.Gray
-                        },
-                        modifier = Modifier.size(16.dp)
+                        tint = statusColor, //if (isFiltered) statusColorFilter else statusColor,  // Usando a co r reativa
+                        modifier = Modifier.size(18.dp)
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+
                     Text(
-                        text = schedule.status,
+                        text = status, //if (isFiltered) statusFilter else status,
                         fontSize = 14.sp,
-                        color = schedule.statusColor
+                        color = statusColor,  //if (isFiltered) statusColorFilter else Color.Black,  // Usando a cor reativa
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "time Icon",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = (
+                                "Horário: " +
+                                        schedule.startTime.removeRange(
+                                            schedule.startTime.length - 3,
+                                            schedule.startTime.length
+                                        )
+                                ),
+                        fontSize = 14.sp,
+                        color = Color.Black
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            IconButton(
-                onClick = { /* TODO: Visualizar agendamento */ }
+            // Nome do Profissional
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "View Icon",
-                    tint = Color.Gray
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Build,
+                        contentDescription = "Professional Icon",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = schedule.professionalName,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                }
+
+                // Endereço do Cliente (se houver)
+                schedule.address.let {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Location Icon",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = it,
+                            fontSize = 14.sp,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
+
+            // Seção expansível com detalhes adicionais
+            if (expanded) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        IconButton(
+                            onClick = {
+                                showConfirmationDialog = true
+                                actionType = "accept"
+                            },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Accept Icon",
+                                tint = Color.Green
+                            )
+                        }
+
+                        IconButton(
+                            onClick = {
+                                showConfirmationDialog = true
+                                actionType = "reject"
+                            },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Reject Icon",
+                                tint = Color.Red
+                            )
+                        }
+                    }
+                }
             }
         }
     }
+
+    if (showConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            title = {
+                Text(text = "Confirmação")
+            },
+            text = {
+                Text(
+                    text = if (actionType == "accept") {
+                        "Você tem certeza que deseja aceitar este agendamento?"
+                    } else if (actionType == "reject") {
+                        "Você tem certeza que deseja recusar este agendamento?"
+                    } else {
+                        "Você tem certeza que deseja excluir este agendamento?"
+                    }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+
+                        if (actionType == "accept") {
+                            scheduleViewModel.acceptAppointment(
+                                appointmentId = schedule.appointmentId.toString(),
+                                context = context
+                            )
+
+                            status = "Aprovado"
+                            statusColor = Color.Green
+                            showConfirmationDialog = false
+                            expanded = false
+                            scheduleViewModel.filterSchedules()
+
+
+                        } else if (actionType == "reject") {
+                            scheduleViewModel.rejectAppointment(
+                                appointmentId = schedule.appointmentId.toString(),
+                                context = context
+                            )
+
+
+                            status = "Recusado"
+                            statusColor = Color.Red
+                            showConfirmationDialog = false
+                            expanded = false
+                            scheduleViewModel.filterSchedules()
+
+
+                        } else if (actionType == "delete") {
+                            scheduleViewModel.deleteAppointment(
+                                appointmentId = schedule.appointmentId.toString(),
+                                context = context
+                            )
+
+                            expanded = false
+                            scheduleViewModel.filterSchedules()
+                            navController.popBackStack()
+                            navController.navigate("scheduleScreen")
+                        }
+                    }
+                ) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showConfirmationDialog = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 }
+
+
+
+
+
