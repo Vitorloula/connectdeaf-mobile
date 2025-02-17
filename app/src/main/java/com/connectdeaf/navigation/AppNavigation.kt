@@ -8,6 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.connectdeaf.ui.screens.AddressScreen
+import com.connectdeaf.ui.screens.chat.ChatListScreen
+import com.connectdeaf.ui.screens.chat.ChatScreen
 import com.connectdeaf.ui.screens.FAQScreen
 import com.connectdeaf.ui.screens.HomeScreen
 import com.connectdeaf.ui.screens.ProfileScreen
@@ -37,10 +39,20 @@ fun AppNavigation(navController: NavHostController) {
         startDestination = "registerInitialScreen" // Esta será a primeira tela a ser exibida
     ) {
 
-
+        composable(
+            route = "appointmentScreen/{serviceId}/{professionalId}/{value}",
+            arguments = listOf(
+                navArgument("serviceId") { type = NavType.StringType },
+                navArgument("professionalId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
+            val professionalId = backStackEntry.arguments?.getString("professionalId") ?: ""
+            val value = backStackEntry.arguments?.getString("value") ?: ""
+            AppointmentScreen(navController = navController, serviceId = serviceId, professionalId = professionalId, value = value)
+        }
         composable("loginScreen") { SignInScreen(navController = navController) }
         composable("ScheduleScreen") { ScheduleScreen(navController = navController, drawerViewModel = drawerViewModel) }
-        composable("schedulingScreen") { AppointmentScreen(navController = navController, ServiceId = "", ProfessionalId = "") }
         composable("registerInitialScreen") { RegisterInitialScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("registerProfessionalScreen") { RegisterProfessionalScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("registerScreen") { RegisterScreen(navController = navController, registerViewModel = registerViewModel) }
@@ -89,6 +101,19 @@ fun AppNavigation(navController: NavHostController) {
 
 
 
-
+        composable("chatList") { ChatListScreen(navController) }
+        composable(
+            route = "chat/{id}",
+            arguments = listOf(
+                navArgument(name = "id") {
+                    type = NavType.StringType
+                },
+            )
+        ) { backstackEntry ->
+            val id = backstackEntry.arguments?.getString("id")
+            if (id != null) {
+                ChatScreen(navController, id = id)
+            }
+        }
     }
 }

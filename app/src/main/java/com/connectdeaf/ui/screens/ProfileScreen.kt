@@ -1,5 +1,6 @@
 package com.connectdeaf.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -20,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.*
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,18 +45,24 @@ fun ProfileScreen(
     navController: NavController,
     drawerViewModel: DrawerViewModel = viewModel()
 ) {
-
     val profileState = viewModel.profile.collectAsState()
     val scope = rememberCoroutineScope()
-
     val context = LocalContext.current
 
     val authRepository = AuthRepository(context)
-    val professionalId = authRepository.getProfessionalId()
+    val role = authRepository.getRoles()?.firstOrNull() ?: ""
+    val userId = authRepository.getUserId() ?: ""
+    val professionalId = authRepository.getProfessionalId() ?: ""
 
-    LaunchedEffect (key1 = professionalId) {
-        if (professionalId != null) {
-            viewModel.fetchProfile(professionalId, context)
+    Log.d("ROLE", "${role}")
+
+
+    // Chama o fetch com userId e role
+    LaunchedEffect(userId, role) {
+        if (role == "professional") {
+            viewModel.fetchProfile(professionalId, role, context)
+        } else {
+            viewModel.fetchProfile(userId, role, context)
         }
     }
 
@@ -84,19 +91,21 @@ fun ProfileScreen(
                     .background(MaterialTheme.colorScheme.background),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Título "Perfil do profissional"
+                // Título da tela (varia de acordo com o tipo de usuário)
+                val profileTitle = if (role == "ROLE_PROFESSIONAL") "Perfil do profissional" else "Perfil do cliente"
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Perfil do profissional",
+                        text = profileTitle,
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                // Header (Avatar + Name + Location)
+
+                // Header (Avatar + Nome + Localização)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp),
@@ -120,13 +129,15 @@ fun ProfileScreen(
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            profileState.value?.name?.let {
-                                Text(
-                                    text = it,
-                                    style = MaterialTheme.typography.titleLarge,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                            profileState.value?.user?.name.let {
+                                if (it != null) {
+                                    Text(
+                                        text = it,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             }
                             Row {
                                 Image(
@@ -136,7 +147,7 @@ fun ProfileScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "${profileState.value?.addresses?.first()?.city}, ${profileState.value?.addresses?.first()?.state}",
+                                    text = "${profileState.value?.user?.addresses?.first()?.city}, ${profileState.value?.user?.addresses?.first()?.state}",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.Blue
                                 )
@@ -168,8 +179,8 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // "Minhas habilidades"
-                    if (profileState.value?.category?.isNotEmpty() == true) {
+                    // "Minhas habilidades" exibido apenas para profissionais
+                    if (role == "ROLE_PROFESSIONAL" && profileState.value?.category?.isNotEmpty() == true) {
                         Column {
                             Text(
                                 text = "Minhas habilidades",
@@ -192,52 +203,51 @@ fun ProfileScreen(
                                 }
                             }
                         }
-
                     }
                 }
 
-
-
+                // Seção de "Serviços e avaliações" para profissional ou apenas "Avaliações" para cliente
+                val servicesAndAssessmentsTitle = if (role == "ROLE_PROFESSIONAL") "Serviços e avaliações" else "Avaliações"
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Serviços e avaliações",
+                        text = servicesAndAssessmentsTitle,
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                // Serviços
-                if (profileState.value?.services?.isNotEmpty() == true) {
-                    Row(
-                        modifier = Modifier
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        profileState.value?.services!!.forEach { service ->
-                            ServiceCard(
-                                id = service.id,
-                                name = service.name,
-                                description = service.description,
-                                image = R.drawable.doutor.toString(),
-                                value = service.value,
-                                onClick = {}
-                            )
+                // Exibe os serviços apenas para profissionais
+                if (role == "ROLE_PROFESSIONAL") {
+                    if (profileState.value?.services?.isNotEmpty() == true) {
+                        Row(
+                            modifier = Modifier
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            profileState.value?.services!!.forEach { service ->
+                                ServiceCard(
+                                    id = service.id,
+                                    name = service.name,
+                                    description = service.description,
+                                    image = R.drawable.doutor.toString(),
+                                    value = service.value,
+                                    onClick = {}
+                                )
+                            }
                         }
+                    } else {
+                        Text(
+                            text = "Nenhum serviço cadastrado",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
-                }else{
-                    Text(
-                        text = "Nenhum serviço cadastrado",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
                 }
 
-
-                // Avaliações
-
-                SectionCard(title = "Avaliações sobre o profissional") {
+                // Avaliações (o título muda conforme o tipo de perfil)
+                SectionCard(title = if (role == "ROLE_PROFESSIONAL") "Avaliações sobre o profissional" else "Avaliações") {
                     if (profileState.value?.assessments?.isNotEmpty() == true) {
                         Row {
                             Image(
@@ -265,9 +275,7 @@ fun ProfileScreen(
                                 )
                             }
                         }
-
-                    }
-                    else{
+                    } else {
                         Text(
                             text = "Nenhuma avaliação cadastrada",
                             style = MaterialTheme.typography.bodyMedium
@@ -303,6 +311,8 @@ fun SectionCard(title: String, content: @Composable () -> Unit) {
 @Preview(showBackground = true)
 fun PreviewProfileScreen() {
     ConnectDeafTheme {
-        ProfileScreen(navController = NavHostController(LocalContext.current))
+        ProfileScreen(
+            navController = NavHostController(LocalContext.current)
+        )
     }
 }

@@ -18,12 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.connectdeaf.R
+import com.connectdeaf.data.repository.AuthRepository
 import com.connectdeaf.ui.theme.ErrorColor
 import com.connectdeaf.ui.theme.PrimaryColor
 
@@ -40,6 +41,10 @@ fun ServiceCard(
     onEditClick: (id: String) -> Unit = {}
 
 ) {
+    val context = LocalContext.current
+    val authRepository = AuthRepository(context)
+    val userRoles = authRepository.getRoles()
+
     Card(
         modifier = Modifier
             .clickable { onClick(id.toString()) }
@@ -93,45 +98,33 @@ fun ServiceCard(
                 )
             }
 
-            if (isProfessional) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 15.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    IconButton(onClick = { onEditClick(id) }) {
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Editar",
-                            tint = PrimaryColor,
+            if (userRoles != null) {
+                if (userRoles.contains("ROLE_PROFESSIONAL")) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 15.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        IconButton(onClick = { onEditClick(id) }) {
+                            Icon(
+                                imageVector = Icons.Filled.Edit,
+                                contentDescription = "Editar",
+                                tint = PrimaryColor,
 
+                                )
+                        }
+                        IconButton(onClick = { onDeleteClick(id) }) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = "Deletar",
+                                tint = ErrorColor,
+                                modifier = Modifier.size(50.dp)
                             )
-                    }
-                    IconButton(onClick = { onDeleteClick(id) }) {
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = "Deletar",
-                            tint = ErrorColor,
-                            modifier = Modifier.size(50.dp)
-                        )
+                        }
                     }
                 }
             }
         }
     }
-}
-
-
-@Preview
-@Composable
-private fun ServiceCardPreview() {
-    ServiceCard(
-        id = "1",
-        name = "Teste",
-        description = "Oferecemos serviços de limpeza residencial e comercial com alta qualidade e preços competitivos.",
-        image = null,
-        value = 150.00,
-        onClick = { id -> println("Clicked on service with id: $id") }
-    )
 }

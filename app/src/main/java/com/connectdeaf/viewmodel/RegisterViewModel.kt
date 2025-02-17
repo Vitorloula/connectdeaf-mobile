@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.connectdeaf.data.repository.FirebaseRepository
 import com.connectdeaf.data.repository.ProfessionalRepository
 import com.connectdeaf.data.repository.UserRepository
 import com.connectdeaf.domain.model.Professional
@@ -23,8 +24,11 @@ import java.time.LocalTime
 
 class RegisterViewModel(
     private val userRepository: UserRepository,
-    private val professionalRepository: ProfessionalRepository
+    private val professionalRepository: ProfessionalRepository,
+    private val firebaseRepository: FirebaseRepository
 ) : ViewModel() {
+
+    var registerResult: ((Boolean) -> Unit)? = null
 
     // Estados de usuário e endereço
     private val _uiState = MutableStateFlow(RegisterUiState(
@@ -169,6 +173,17 @@ class RegisterViewModel(
         )
 
         Log.d("RegisterViewModel", "Dados do ProfessionalRequest: $professionalRequest")
+
+        // Enviar para a API
+        firebaseRegister(state.email, state.password, state.name) { success ->
+            if (success) {
+                registerResult?.invoke(true)
+            } else {
+                registerResult?.invoke(false)
+                Log.e("RegisterViewModel", "Erro no cadastro com Firebase")
+            }
+
+        }
         sendProfessionalRequest(professionalRequest, context)
     }
 
@@ -239,6 +254,15 @@ class RegisterViewModel(
         Log.d("RegisterViewModel", "Dados do UserRequest: $userRequest")
 
         // Enviar para a API
+        firebaseRegister(state.email, state.password, state.name) { success ->
+            if (success) {
+                registerResult?.invoke(true)
+            } else {
+                registerResult?.invoke(false)
+                Log.e("RegisterViewModel", "Erro no cadastro com Firebase")
+            }
+
+        }
         sendUserRequest(userRequest, context)
     }
 
@@ -262,6 +286,13 @@ class RegisterViewModel(
                 _uiState.update { it.copy(isUserCreated = false, errorMessage = e.message) }
                 Log.e("RegisterViewModel", "Erro ao criar usuário: ${e.message}")
             }
+        }
+    }
+
+    fun firebaseRegister(email: String, password: String, name: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = firebaseRepository.registerUser(email, password, name)
+            onResult(success)
         }
     }
 }

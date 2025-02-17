@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.connectdeaf.chat.DataRepository
 import com.connectdeaf.data.repository.AuthRepository
+import com.connectdeaf.data.repository.FirebaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -20,7 +22,13 @@ data class SignInUiState(
     val errorMessage: String? = null
 )
 
-class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() {
+class SignInViewModel(
+    private val authRepository: AuthRepository,
+    private val firebaseRepository: FirebaseRepository,
+    private val dataRepository: DataRepository
+) : ViewModel() {
+
+    var loginResult: ((Boolean) -> Unit)? = null
 
     private val _uiState = MutableStateFlow(SignInUiState())
     val uiState: StateFlow<SignInUiState> = _uiState
@@ -67,6 +75,17 @@ class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() 
                 if (result.isSuccess) {
                     val loginResponse = result.getOrThrow()
                     Log.d("SignInViewModel", "Login bem-sucedido: Token=${loginResponse.accessToken}")
+
+                    firebaseLogin(currentState.email, currentState.password) { success ->
+                        if (success) {
+                            saveUserData()
+                            loginResult?.invoke(true)
+                        } else {
+                            loginResult?.invoke(false)
+                            Log.e("SignInViewModel", "Erro no login com Firebase")
+                        }
+                    }
+
                     onSuccess()
                 } else {
                     _uiState.value = _uiState.value.copy(errorMessage = "Credenciais inválidas")
@@ -77,6 +96,21 @@ class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() 
             } finally {
                 _uiState.value = _uiState.value.copy(isSubmitting = false)
             }
+        }
+    }
+
+    fun firebaseLogin(email: String, password: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = firebaseRepository.loginUser(email, password)
+            onResult(success) // Retorna true ou false para a tela de login
+        }
+    }
+
+    fun saveUserData() {
+        viewModelScope.launch {
+            dataRepository.saveUserEmail(firebaseRepository.getUserEmail()!!)
+            dataRepository.saveUserId(firebaseRepository.getUserId()!!)
+            dataRepository.saveUserName(firebaseRepository.getUserName()!!)
         }
     }
 }

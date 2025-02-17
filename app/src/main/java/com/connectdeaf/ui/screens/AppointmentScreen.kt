@@ -1,58 +1,45 @@
 package com.connectdeaf.ui.screens
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.connectdeaf.network.dtos.PaymentRequest
+import com.connectdeaf.network.retrofit.ApiServiceFactory
 import com.connectdeaf.ui.components.DatePickerDialog
 import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.viewmodel.DrawerViewModel
 import com.connectdeaf.viewmodel.AppointmentViewModel
 import kotlinx.coroutines.launch
-
+import java.io.IOException
+import retrofit2.HttpException
 
 @Composable
 fun AppointmentScreen(
     navController: NavController,
     drawerViewModel: DrawerViewModel = viewModel(),
     appointmentViewModel: AppointmentViewModel = viewModel(),
-    ServiceId: String,  // Mudado para String (ou mantenha Int conforme necessidade)
-    ProfessionalId: String  // Mudado para String (ou mantenha Int conforme necessidade)
+    serviceId: String,
+    professionalId: String,
+    value: String
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -63,9 +50,12 @@ fun AppointmentScreen(
 
     val availableTimes = appointmentViewModel.availableTimeSlots
 
+    var isLoading by remember { mutableStateOf(false) }
+    val apiServiceFactory = remember { ApiServiceFactory(context) }
+
     LaunchedEffect(selectedDate) {
         if (selectedDate != "Selecione uma data") {
-            appointmentViewModel.fetchTimeSlots(ProfessionalId, selectedDate, context)
+            appointmentViewModel.fetchTimeSlots(professionalId, selectedDate, context)
         }
     }
 
@@ -100,7 +90,7 @@ fun AppointmentScreen(
                     textAlign = TextAlign.Center,
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
                     text = "Selecione uma data e horário disponível para o serviço",
@@ -110,7 +100,7 @@ fun AppointmentScreen(
                     textAlign = TextAlign.Center,
                 )
 
-                Spacer(modifier = Modifier.height(25.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // Seção de Seleção de Data
                 Text(
@@ -156,9 +146,8 @@ fun AppointmentScreen(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Acessando a lista real de horários a partir do MutableState
                     items(availableTimes.value) { timeSlot ->
-                        val isSelected = selectedTime == timeSlot.startTime // Supondo que o objeto `timeSlot` tenha a propriedade `time`
+                        val isSelected = selectedTime == timeSlot.startTime
 
                         Card(
                             modifier = Modifier
@@ -168,7 +157,7 @@ fun AppointmentScreen(
                                     if (isSelected) {
                                         appointmentViewModel.selectTime("Selecione um horário")
                                     } else {
-                                        appointmentViewModel.selectTime(timeSlot.startTime) // Supondo que `timeSlot` tenha a propriedade `time`
+                                        appointmentViewModel.selectTime(timeSlot.startTime)
                                     }
                                 },
                             shape = MaterialTheme.shapes.medium,
@@ -184,7 +173,7 @@ fun AppointmentScreen(
                                     .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
                             ) {
                                 Text(
-                                    text = timeSlot.startTime, // Aqui também
+                                    text = timeSlot.startTime,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Normal,
                                     color = if (isSelected) Color.White else Color.Gray
@@ -210,29 +199,67 @@ fun AppointmentScreen(
                     color = Color.Black,
                 )
 
-                Spacer(modifier = Modifier.height(200.dp))
+                Spacer(modifier = Modifier.height(25.dp))
 
-                // Botão de Continuar
                 Button(
                     onClick = {
-                        if (appointmentViewModel.canContinue()) {
-                            appointmentViewModel.postAppointment(ProfessionalId, ServiceId, context)
-                            navController.navigate("nextScreen") // Navegar para a próxima tela após o agendamento
+                        if (appointmentViewModel.canContinue() && !isLoading) {
+                            scope.launch {
+                                isLoading = true
+                                try {
+                                    if (value.isEmpty() || value.toBigDecimalOrNull() == null) {
+                                        Toast.makeText(context, "Valor inválido", Toast.LENGTH_SHORT).show()
+                                        return@launch
+                                    }
+
+                                    val paymentRequest = PaymentRequest(
+                                        amount = value.toBigDecimal(),
+                                        email = "vitor@gmail.com"
+                                    )
+
+                                    val retrofitResponse =
+                                        apiServiceFactory.paymentService.createPixPayment(paymentRequest)
+
+                                    if (retrofitResponse.isSuccessful) {
+                                        val paymentResponse = retrofitResponse.body()
+
+                                        if (paymentResponse != null) {
+                                            val paymentLink = paymentResponse.paymentLink
+
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentLink))
+                                            startActivity(context, intent, null)
+                                            Toast.makeText(context, "Pagamento iniciado com sucesso!", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Toast.makeText(context, "Resposta vazia do servidor", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } else {
+                                        Toast.makeText(context, "Erro no pagamento", Toast.LENGTH_SHORT).show()
+                                    }
+                                } catch (e: IOException) {
+                                    Toast.makeText(context, "Erro de conexão. Verifique sua internet.", Toast.LENGTH_SHORT).show()
+                                } catch (e: HttpException) {
+                                    Toast.makeText(context, "Erro no servidor. Tente novamente mais tarde.", Toast.LENGTH_SHORT).show()
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Erro inesperado: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                } finally {
+                                    isLoading = false
+                                }
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (appointmentViewModel.canContinue()) MaterialTheme.colorScheme.primary else Color(0xFF999999),
+                        containerColor = if (appointmentViewModel.canContinue() && !isLoading) MaterialTheme.colorScheme.primary else Color(0xFF999999),
                     ),
-                    enabled = appointmentViewModel.canContinue()
+                    enabled = appointmentViewModel.canContinue() && !isLoading
                 ) {
-                    Text("Continuar")
+                    if (isLoading) {
+                        CircularProgressIndicator(color = Color.White)
+                    } else {
+                        Text("Continuar")
+                    }
                 }
             }
         }
     }
 }
-
-
-
-

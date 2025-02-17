@@ -10,6 +10,14 @@ class AuthInterceptor(private val getToken: () -> String?) : Interceptor {
             return chain.proceed(request)
         }
 
+        if (request.url.encodedPath.contains("/api/users") and (request.method == "POST")) {
+            return chain.proceed(request)
+        }
+
+        if (request.url.encodedPath.contains("/api/professionals") and (request.method == "POST")) {
+            return chain.proceed(request)
+        }
+
         val token = getToken()
         val requestBuilder = chain.request().newBuilder()
 

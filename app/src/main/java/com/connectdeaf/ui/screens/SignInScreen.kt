@@ -14,7 +14,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.connectdeaf.chat.DataRepository
 import com.connectdeaf.data.repository.AuthRepository
+import com.connectdeaf.data.repository.FirebaseRepository
 import com.connectdeaf.ui.components.GenericInputField
 import com.connectdeaf.viewmodel.SignInViewModel
 import com.connectdeaf.viewmodel.factory.SignInViewModelFactory
@@ -25,8 +27,10 @@ fun SignInScreen(
 ) {
     val context = LocalContext.current
     val authRepository = AuthRepository(context)
+    val firebaseRepository = FirebaseRepository()
+    val dataRepository = DataRepository(context)
     val viewModel: SignInViewModel = viewModel(
-        factory = SignInViewModelFactory(authRepository)
+        factory = SignInViewModelFactory(authRepository, firebaseRepository, dataRepository)
     )
 
     val uiState by viewModel.uiState.collectAsState()
