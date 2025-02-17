@@ -11,18 +11,38 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.connectdeaf.R
+import com.connectdeaf.chat.DataRepository
 import com.connectdeaf.domain.model.chat.Conversa
 import com.connectdeaf.domain.model.chat.Message
 
 @Composable
 fun CardConversa(conversa: Conversa, onClick: (Conversa) -> Unit = {}) {
+    val context = LocalContext.current
+    val dataRepository = DataRepository(context)
+    var userName by remember { mutableStateOf<String?>(null) }
+    val userName2 = if (conversa.usuario1?.name == userName) {
+        conversa.usuario2?.name ?: "Unknown User"
+    } else {
+        conversa.usuario1?.name ?: "Unknown User"
+    }
+
+    LaunchedEffect(Unit) {
+        userName = dataRepository.getCurrentUserName()
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -48,7 +68,7 @@ fun CardConversa(conversa: Conversa, onClick: (Conversa) -> Unit = {}) {
         ) {
             // Nome do usuário
             Text(
-                text = conversa.usuario2?.name ?: "Usuário Desconhecido",
+                text = userName2,
                 style = MaterialTheme.typography.titleSmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
