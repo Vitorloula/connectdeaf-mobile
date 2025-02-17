@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 class DrawerViewModel : ViewModel() {
     val drawerStateMenu = DrawerState(DrawerValue.Closed)
     val drawerStateNotifications = DrawerState(DrawerValue.Closed)
+    val notificationViewModel = NotificationViewModel()
 
 
     suspend fun openMenuDrawer(): DrawerState {

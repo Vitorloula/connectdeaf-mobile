@@ -6,7 +6,7 @@ import okhttp3.Response
 class AuthInterceptor(private val getToken: () -> String?) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
-        if (request.url.encodedPath.contains("/api/auth/login")) {
+        if (request.url.encodedPath.contains("/api/auth/login") || request.url.encodedPath.contains("/api/professionals") || request.url.encodedPath.contains("/api/users")) {
             return chain.proceed(request)
         }
 
