@@ -11,8 +11,8 @@ fun DrawerMenu(
     navController: NavController,
     scope: CoroutineScope,
     drawerViewModel: DrawerViewModel,
-    gesturesEnabled: Boolean = true, // usuario pode acessar o menu com o "swipe"
-    content: @Composable () -> Unit
+    gesturesEnabled: Boolean = true,
+    content: @Composable () -> Unit,
 ) {
 
 
@@ -24,6 +24,7 @@ fun DrawerMenu(
                 navController = navController,
                 drawerState = drawerViewModel.drawerStateNotifications,
                 scope = scope,
+                notificationViewModel = drawerViewModel.notificationViewModel
             )
         },
         content = {
