@@ -6,6 +6,7 @@ import com.connectdeaf.network.services.ApiService
 import com.connectdeaf.network.services.AppointmentService
 import com.connectdeaf.network.services.AssessmentService
 import com.connectdeaf.network.services.FAQApiService
+import com.connectdeaf.network.services.PaymentService
 import com.connectdeaf.network.services.ProfessionalService
 import com.connectdeaf.network.services.ServiceService
 import com.connectdeaf.network.services.UserService
@@ -50,5 +51,9 @@ class ApiServiceFactory(context: Context) {
     val assessmentService: AssessmentService by lazy {
         sharedRetrofit.create(AssessmentService::class.java)
 
+    }
+
+    val paymentService: PaymentService by lazy {
+        sharedRetrofit.create(PaymentService::class.java)
     }
 }

@@ -1,6 +1,6 @@
 package com.connectdeaf.ui.screens
 
-import androidx.compose.foundation.clickable
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,67 +8,76 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.connectdeaf.data.repository.AuthRepository
 import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.components.ScheduleCard
 import com.connectdeaf.viewmodel.DrawerViewModel
+import com.connectdeaf.viewmodel.ScheduleViewModel
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun ScheduleScreen(
     navController: NavController,
-    drawerViewModel: DrawerViewModel = viewModel(),
+    drawerViewModel: DrawerViewModel,
+    scheduleViewModel: ScheduleViewModel = viewModel(),
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val schedules = listOf(
-        ScheduleItem("Design para loja de flores", "Olivia da Silva", "Cancelado", Color.Red),
-        ScheduleItem("Logotipo", "João Carlos", "Em espera", Color.Blue),
-        ScheduleItem("Protótipo", "Carla Ilane", "Concluído", Color.Green)
-    )
+    val authRepository = remember { AuthRepository(context) }
 
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedStatus by remember { mutableStateOf<String?>(null) }
-    var showFilterDialog by remember { mutableStateOf(false) }
+    val role = remember { authRepository.getRoles() }
 
-    val filteredSchedules = schedules.filter {
-        (searchQuery.isBlank() || it.serviceName.contains(searchQuery, ignoreCase = true) || it.clientName.contains(searchQuery, ignoreCase = true)) &&
-                (selectedStatus == null || it.status == selectedStatus)
+    val schedule = scheduleViewModel.scheduleItems.value
+    val appointments by scheduleViewModel.appointments
+    val searchQuery by scheduleViewModel.searchQuery
+    val showFilterDialog by scheduleViewModel.showFilterDialog
+
+
+    if (role != null) {
+        if (role.contains("ROLE_USER")) {
+            val userId = remember { authRepository.getUserId() }
+            LaunchedEffect(userId) {
+                userId?.let {
+                    scheduleViewModel.fetchCustomerAppointments(it, context)
+                }
+            }
+        } else if(role.contains("ROLE_PROFESSIONAL")) {
+            val professionalId = remember { authRepository.getProfessionalId() }
+            LaunchedEffect(professionalId) {
+                professionalId?.let {
+                    scheduleViewModel.fetchProfessionalAppointments(it, context)
+                }
+            }
+        }
     }
+
+    Log.d("role", role.toString())
 
     DrawerMenu(
         navController = navController,
@@ -85,6 +94,7 @@ fun ScheduleScreen(
                 )
             }
         ) { paddingValues ->
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -95,22 +105,9 @@ fun ScheduleScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    IconButton(
-                        onClick = { showFilterDialog = true },
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Filter Icon",
-                            tint = Color.Gray
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
                     OutlinedTextField(
                         value = searchQuery,
-                        onValueChange = { newValue -> searchQuery = newValue },
+                        onValueChange = { scheduleViewModel.onSearchQueryChanged(it) },
                         placeholder = {
                             Text(
                                 "Pesquisar por serviço, prestador...",
@@ -129,18 +126,17 @@ fun ScheduleScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Lista de agendamentos filtrados
+                // Lista de agendamentos
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(filteredSchedules) { schedule ->
-                        ScheduleCard(schedule)
+                    items(schedule) { schedule ->
+                        ScheduleCard(navController,schedule, role.toString(), scheduleViewModel, drawerViewModel.notificationViewModel)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
 
-                // Mensagem caso nenhum item corresponda ao filtro
-                if (filteredSchedules.isEmpty()) {
+                if (appointments.isEmpty()) {
                     Text(
                         text = "Nenhum agendamento encontrado",
                         color = Color.Gray,
@@ -151,66 +147,6 @@ fun ScheduleScreen(
                     )
                 }
             }
-
-            // Dialog de filtro
-            if (showFilterDialog) {
-                AlertDialog(
-                    onDismissRequest = { showFilterDialog = false },
-                    title = {
-                        Text(
-                            text = "Filtrar por: ",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                    },
-                    text = {
-                        Column {
-                            listOf("Concluído", "Cancelado", "Em espera").forEach { status ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            selectedStatus = if (selectedStatus == status) null else status
-                                            showFilterDialog = false
-                                        }
-                                        .padding(vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    RadioButton(
-                                        selected = selectedStatus == status,
-                                        onClick = {
-                                            selectedStatus = if (selectedStatus == status) null else status
-                                            showFilterDialog = false
-                                        }
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(text = status)
-                                }
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { showFilterDialog = false }) {
-                            Text(text = "Fechar")
-                        }
-                    }
-                )
-            }
         }
     }
 }
-
-@Preview
-@Composable
-fun ScheduleScreenPreview() {
-    ScheduleScreen(navController = rememberNavController())
-}
-
-
-
-data class ScheduleItem(
-    val serviceName: String,
-    val clientName: String,
-    val status: String,
-    val statusColor: Color
-)

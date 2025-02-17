@@ -25,7 +25,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.connectdeaf.R
@@ -38,7 +37,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun HomeScreen(navController: NavController, drawerViewModel : DrawerViewModel = viewModel()) {
+fun HomeScreen(navController: NavController, drawerViewModel : DrawerViewModel) {
 
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
@@ -47,7 +46,7 @@ fun HomeScreen(navController: NavController, drawerViewModel : DrawerViewModel =
     DrawerMenu(
         navController = navController,
         scope = scope,
-        drawerViewModel = drawerViewModel,
+        drawerViewModel = drawerViewModel
     ) {
         Scaffold(
             topBar = {
@@ -154,5 +153,5 @@ fun TagsSection(tags: List<String>) {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen( navController = NavHostController(LocalContext.current) )
+    HomeScreen( navController = NavHostController(LocalContext.current), drawerViewModel = DrawerViewModel())
 }

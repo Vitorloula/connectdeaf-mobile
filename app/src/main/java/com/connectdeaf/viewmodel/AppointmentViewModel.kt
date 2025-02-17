@@ -1,9 +1,9 @@
 package com.connectdeaf.viewmodel
 
-import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
@@ -17,110 +17,131 @@ import com.connectdeaf.network.retrofit.ApiServiceFactory
 import com.connectdeaf.utils.AppointmentNotificationWorker
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
+class AppointmentViewModel : ViewModel() {
+    var selectedDate = mutableStateOf("Selecione uma data")
+    var selectedTime = mutableStateOf("Selecione um horário")
+    var availableTimeSlots = mutableStateOf<List<TimeSlotRequest>>(emptyList())
 
-    class AppointmentViewModel : ViewModel() {
-        var selectedDate = mutableStateOf("Selecione uma data")
-            private set
+    fun selectDate(date: String) {
+        selectedDate.value = date
+    }
 
-        var selectedTime = mutableStateOf("Selecione um horário")
-            private set
+    fun selectTime(time: String) {
+        selectedTime.value = time
+    }
 
-        var availableTimeSlots = mutableStateOf<List<TimeSlotRequest>>(emptyList())
+    fun canContinue(): Boolean {
+        return selectedDate.value != "Selecione uma data" && selectedTime.value != "Selecione um horário"
+    }
 
-        fun selectDate(date: String) {
-            selectedDate.value = date
-        }
-
-        fun selectTime(time: String) {
-            selectedTime.value = time
-        }
-
-        fun canContinue(): Boolean {
-            return selectedDate.value != "Selecione uma data" && selectedTime.value != "Selecione um horário"
-        }
-
-        fun fetchTimeSlots(professionalId: String, date: String, context: Context) {
-            viewModelScope.launch {
-                try {
-                    val apiServiceFactory = ApiServiceFactory(context)  // Supondo que você tenha esse método
-                    val professionalService = apiServiceFactory.professionalService
-
-                    // Chama a API para buscar os horários disponíveis de forma assíncrona
-                    val timeSlotRequest = professionalService.fetchTimeSlots(professionalId, date)
-
-                    // Verifica se o resultado foi bem-sucedido
-                    availableTimeSlots.value = timeSlotRequest
-                } catch (e: Exception) {
-                    println("Error: $e")
-                }
-            }
-        }
-
-        fun calculateNotificationDelay(selectedDate: String, selectedTime: String): Long {
-            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-            val currentDateTime = Calendar.getInstance().time
-
+    fun fetchTimeSlots(professionalId: String, rawDate: String, context: Context) {
+        viewModelScope.launch {
             try {
-                // Combina a data e hora selecionadas em um único objeto Date
-                val appointmentDateTime = dateTimeFormat.parse("$selectedDate $selectedTime")
+                val inputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val parsedDate = inputFormat.parse(rawDate)
+                val formattedDate = outputFormat.format(parsedDate!!)
 
-                if (appointmentDateTime != null) {
-                    val appointmentTimeInMillis = appointmentDateTime.time
-                    val notificationTimeInMillis = appointmentTimeInMillis - TimeUnit.HOURS.toMillis(4) // 4 horas antes
+                val apiServiceFactory = ApiServiceFactory(context)
+                val professionalService = apiServiceFactory.professionalService
 
-                    return maxOf(notificationTimeInMillis - currentDateTime.time, 0) // Evita valores negativos
+                val response = professionalService.fetchTimeSlots(professionalId, formattedDate)
+
+                if (response.isSuccessful) {
+                    availableTimeSlots.value = response.body() ?: emptyList()
+                } else {
+                    Log.e("API Error", "Código: ${response.code()}")
                 }
             } catch (e: Exception) {
-                println("Erro ao calcular o atraso da notificação: $e")
+                Log.e("Network Error", e.message ?: "Erro desconhecido")
             }
-            return 0L // Retorna 0 como fallback
         }
+    }
 
+    private fun calculateNotificationDelay(selectedDate: String, selectedTime: String): Long {
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
 
-            fun postAppointment(professionalId: String, serviceId: String, context: Context) {
-                val authRepository = AuthRepository(context)
-                val userId = authRepository.getUserId()
+        try {
+            val parsedDate = dateFormat.parse(selectedDate)
+            val isoDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(parsedDate!!)
 
-                viewModelScope.launch {
-                    try {
-                        val apiServiceFactory = ApiServiceFactory(context)
-                        val appointmentService = apiServiceFactory.appointmentService
-                        if (userId != null) {
-                            val appointmentRequest = AppointmentRequest(
-                                date = selectedDate.value,
-                                time = selectedTime.value
+            val appointmentDateTime = dateTimeFormat.parse("$isoDate $selectedTime")
+
+            if (appointmentDateTime != null) {
+                val appointmentTimeInMillis = appointmentDateTime.time
+                val notificationTimeInMillis = appointmentTimeInMillis - TimeUnit.HOURS.toMillis(4)
+
+                return maxOf(notificationTimeInMillis - System.currentTimeMillis(), 0)
+            }
+        } catch (e: Exception) {
+            Log.e("Notification Error", "Erro ao calcular notificação: $e")
+        }
+        return 0L
+    }
+
+    fun postAppointment(professionalId: String, serviceId: String, context: Context) {
+        val authRepository = AuthRepository(context)
+        val userId = authRepository.getUserId()
+
+        viewModelScope.launch {
+            try {
+                val apiServiceFactory = ApiServiceFactory(context)
+                val appointmentService = apiServiceFactory.appointmentService
+                if (userId != null) {
+                    val inputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val parsedDate = inputFormat.parse(selectedDate.value)
+                    val formattedDate = outputFormat.format(parsedDate!!)
+
+                    val timeSlot =
+                        availableTimeSlots.value.find { it.startTime == selectedTime.value }
+                    val endTime = timeSlot?.endTime
+
+                    if (endTime == null) {
+                        Log.e(
+                            "AppointmentError",
+                            "EndTime não encontrado para o horário selecionado."
+                        )
+                        return@launch
+                    }
+
+                    val appointmentRequest = AppointmentRequest(
+                        customerId = userId,
+                        professionalId = professionalId,
+                        serviceId = serviceId,
+                        date = formattedDate,
+                        startTime = selectedTime.value,
+                        endTime = endTime
+                    )
+                    appointmentService.postAppointment(
+                        appointmentRequest
+                    )
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                        context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        val delay =
+                            calculateNotificationDelay(selectedDate.value, selectedTime.value)
+                        val workRequest = OneTimeWorkRequestBuilder<AppointmentNotificationWorker>()
+                            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                            .setInputData(
+                                workDataOf(
+                                    "title" to "Lembrete de Agendamento",
+                                    "message" to "Seu compromisso está marcado para ${selectedDate.value} às ${selectedTime.value}!"
+                                )
                             )
-                            // Envia a requisição de agendamento
-                            appointmentService.postAppointment(userId, professionalId, serviceId, appointmentRequest)
-
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-                                context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-                            ) {
-                                val delay = calculateNotificationDelay(selectedDate.value, selectedTime.value)
-
-                                // Configura o WorkManager para disparar a notificação
-                                val workRequest = OneTimeWorkRequestBuilder<AppointmentNotificationWorker>()
-                                    .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                                    .setInputData(
-                                        workDataOf(
-                                            "title" to "Lembrete de Agendamento",
-                                            "message" to "Seu compromisso está marcado para ${selectedDate.value} às ${selectedTime.value}!"
-                                        )
-                                    )
-                                    .build()
-
-                                WorkManager.getInstance(context).enqueue(workRequest)
-                            } else {
-                                println("Permissão para notificações não concedida. Notificação não configurada.")
-                            }
-                        }
-                    } catch (e: Exception) {
-                        println("Error: $e")
+                            .build()
+                        WorkManager.getInstance(context).enqueue(workRequest)
+                    } else {
+                        Log.w("Notification", "Permissão para notificações não concedida.")
                     }
                 }
+            } catch (e: Exception) {
+                Log.e("Appointment Error", "Error: $e")
             }
         }
+    }
+}

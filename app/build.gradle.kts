@@ -90,8 +90,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-
     // Firebase SDK
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.messaging.ktx)

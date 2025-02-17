@@ -24,6 +24,7 @@ import com.connectdeaf.ui.screens.ServiceScreen
 import com.connectdeaf.ui.screens.ServicesScreen
 import com.connectdeaf.ui.screens.SignInScreen
 import com.connectdeaf.ui.screens.SuccessRegistrationScreen
+import com.connectdeaf.viewmodel.NotificationViewModel
 import com.connectdeaf.viewmodel.RegisterViewModel
 import com.connectdeaf.viewmodel.factory.RegisterViewModelFactory
 
@@ -31,20 +32,33 @@ import com.connectdeaf.viewmodel.factory.RegisterViewModelFactory
 @Composable
 fun AppNavigation(navController: NavHostController) {
     val registerViewModel: RegisterViewModel = viewModel(factory = RegisterViewModelFactory())
+    val drawerViewModel = viewModel<com.connectdeaf.viewmodel.DrawerViewModel>()
 
     NavHost(
         navController = navController,
         startDestination = "registerInitialScreen" // Esta será a primeira tela a ser exibida
     ) {
+
+        composable(
+            route = "appointmentScreen/{serviceId}/{professionalId}/{value}",
+            arguments = listOf(
+                navArgument("serviceId") { type = NavType.StringType },
+                navArgument("professionalId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
+            val professionalId = backStackEntry.arguments?.getString("professionalId") ?: ""
+            val value = backStackEntry.arguments?.getString("value") ?: ""
+            AppointmentScreen(navController = navController, serviceId = serviceId, professionalId = professionalId, value = value)
+        }
         composable("loginScreen") { SignInScreen(navController = navController) }
-        composable("ScheduleScreen") { ScheduleScreen(navController = navController) }
-        composable("schedulingScreen") { AppointmentScreen(navController = navController, ServiceId = "", ProfessionalId = "") }
+        composable("ScheduleScreen") { ScheduleScreen(navController = navController, drawerViewModel = drawerViewModel) }
         composable("registerInitialScreen") { RegisterInitialScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("registerProfessionalScreen") { RegisterProfessionalScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("registerScreen") { RegisterScreen(navController = navController, registerViewModel = registerViewModel) }
         composable("addressScreen") { AddressScreen(navController = navController, registerViewModel = registerViewModel) } // Tela de Endereço
         composable("successRegistrationScreen") { SuccessRegistrationScreen(navController = navController) }
-        composable("home") { HomeScreen(navController = navController) }
+        composable("home") { HomeScreen(navController = navController, drawerViewModel = drawerViewModel) }
         composable("profile") { ProfileScreen(navController = navController) }
         composable("services") { ServicesScreen(navController = navController) }
         composable("faq") { FAQScreen(navController = navController) }

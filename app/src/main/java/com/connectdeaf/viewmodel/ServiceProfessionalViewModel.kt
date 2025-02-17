@@ -3,6 +3,7 @@ package com.connectdeaf.viewmodel
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.connectdeaf.data.repository.ServicesRepository
@@ -58,15 +59,25 @@ class ServiceProfessionalViewModel(
 
     fun createServiceByProfessional(professionalId: String, context: Context) {
         val state = _uiState.value
+
+        // Converte o preço para Double, garantindo que valores inválidos sejam tratados
+        val priceDouble = state.price.toDoubleOrNull() ?: -1.0
+
+        if (priceDouble <= 0) {
+            Toast.makeText(context, "Preço inválido. Digite um valor maior que 0.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val serviceRequest = ServiceRequest(
             name = state.nameService,
             description = state.description,
-            value = state.price!!,
+            value = priceDouble,  // Agora está corretamente convertido para Double
             //categories = state.categories,
             //imageUrl = state.imageUri.toString()
         )
 
         Log.d("ServiceProfessionalViewModel", "ServiceRequest: $serviceRequest")
+
         setLoadingState(true) // Inicia o carregamento
         sendServiceByProfessional(professionalId, serviceRequest, context)
     }
@@ -109,7 +120,7 @@ class ServiceProfessionalViewModel(
                 result
                     .onSuccess {
                         val updatedServices =
-                            _uiState.value.services.filterNot { it.id.toString() == serviceId }
+                            _uiState.value.services.filterNot { it.id == serviceId }
                         onServicesChange(updatedServices)
                     }
                     .onFailure {
@@ -137,8 +148,8 @@ class ServiceProfessionalViewModel(
     }
 
     fun onPriceChange(newPrice: String) {
-        Log.d("ServiceProfessionalViewModel", "Preço: $newPrice")
-        _uiState.update { it.copy(price = newPrice.toDoubleOrNull() ?: 0.0) }
+        Log.d("ServiceProfessionalViewModel", "Preço digitado: $newPrice")
+        _uiState.update { it.copy(price = newPrice) }
     }
 
     fun onCategoryChange(newCategories: String) {
