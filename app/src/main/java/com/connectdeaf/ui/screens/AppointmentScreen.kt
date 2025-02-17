@@ -102,7 +102,6 @@ fun AppointmentScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Seção de Seleção de Data
                 Text(
                     text = "Selecione um dia",
                     fontSize = 16.sp,
@@ -229,6 +228,10 @@ fun AppointmentScreen(
                                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentLink))
                                             startActivity(context, intent, null)
                                             Toast.makeText(context, "Pagamento iniciado com sucesso!", Toast.LENGTH_SHORT).show()
+
+                                            appointmentViewModel.postAppointment(professionalId, serviceId, context)
+
+                                            navController.navigate("ScheduleScreen")
                                         } else {
                                             Toast.makeText(context, "Resposta vazia do servidor", Toast.LENGTH_SHORT).show()
                                         }
