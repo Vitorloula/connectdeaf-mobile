@@ -92,17 +92,40 @@ class AppointmentViewModel : ViewModel() {
                 val apiServiceFactory = ApiServiceFactory(context)
                 val appointmentService = apiServiceFactory.appointmentService
                 if (userId != null) {
+                    val inputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val parsedDate = inputFormat.parse(selectedDate.value)
+                    val formattedDate = outputFormat.format(parsedDate!!)
+
+                    val timeSlot =
+                        availableTimeSlots.value.find { it.startTime == selectedTime.value }
+                    val endTime = timeSlot?.endTime
+
+                    if (endTime == null) {
+                        Log.e(
+                            "AppointmentError",
+                            "EndTime não encontrado para o horário selecionado."
+                        )
+                        return@launch
+                    }
+
                     val appointmentRequest = AppointmentRequest(
-                        date = selectedDate.value,
-                        time = selectedTime.value
+                        customerId = userId,
+                        professionalId = professionalId,
+                        serviceId = serviceId,
+                        date = formattedDate,
+                        startTime = selectedTime.value,
+                        endTime = endTime
                     )
-                    appointmentService.postAppointment(userId, professionalId, serviceId, appointmentRequest)
+                    appointmentService.postAppointment(
+                        appointmentRequest
+                    )
 
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
                         context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
                     ) {
-                        val delay = calculateNotificationDelay(selectedDate.value, selectedTime.value)
-
+                        val delay =
+                            calculateNotificationDelay(selectedDate.value, selectedTime.value)
                         val workRequest = OneTimeWorkRequestBuilder<AppointmentNotificationWorker>()
                             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                             .setInputData(
@@ -112,7 +135,6 @@ class AppointmentViewModel : ViewModel() {
                                 )
                             )
                             .build()
-
                         WorkManager.getInstance(context).enqueue(workRequest)
                     } else {
                         Log.w("Notification", "Permissão para notificações não concedida.")
