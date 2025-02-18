@@ -31,6 +31,8 @@ class ScheduleViewModel : ViewModel() {
     private val _showFilterDialog = mutableStateOf(false)
     val showFilterDialog: State<Boolean> = _showFilterDialog
 
+    var isLoading = mutableStateOf(true)
+
     fun fetchCustomerAppointments(userId: String, context: Context) {
         viewModelScope.launch {
             try {
@@ -62,6 +64,8 @@ class ScheduleViewModel : ViewModel() {
 
             } catch (e: Exception) {
                 Log.e("ScheduleViewModel", "Erro ao buscar agendamentos: ${e.message}")
+            } finally {
+                isLoading.value = false
             }
         }
     }
@@ -99,6 +103,8 @@ class ScheduleViewModel : ViewModel() {
 
             } catch (e: Exception) {
                 Log.e("ScheduleViewModel", "Erro ao buscar agendamentos: ${e.message}")
+            } finally {
+                isLoading.value = false
             }
         }
     }
