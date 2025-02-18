@@ -90,7 +90,8 @@ fun AppNavigation(navController: NavHostController) {
         }
         composable("serviceProfessionalScreen") {
             ServiceProfessionalScreen(
-                navController = navController
+                navController = navController,
+                drawerViewModel = drawerViewModel
             )
         }
         composable("registerServiceScreen") {
