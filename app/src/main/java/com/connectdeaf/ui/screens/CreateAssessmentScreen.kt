@@ -1,13 +1,13 @@
 package com.connectdeaf.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -15,12 +15,11 @@ import com.connectdeaf.data.repository.AuthRepository
 import com.connectdeaf.viewmodel.AssessmentViewModel
 import com.connectdeaf.viewmodel.factory.AssessmentViewModelFactory
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateAssessmentScreen(
     navController: NavController,
     serviceId: String,
-    viewModel: AssessmentViewModel = viewModel(factory = AssessmentViewModelFactory(LocalContext.current))
+    viewModel: AssessmentViewModel = viewModel(factory = AssessmentViewModelFactory(LocalContext.current)),
 ) {
     val context = LocalContext.current
     val authRepository = AuthRepository(context)
@@ -32,20 +31,23 @@ fun CreateAssessmentScreen(
 
     var text by remember { mutableStateOf("") }
     var rating by remember { mutableStateOf(0) }
+    var isError by remember { mutableStateOf(false) }
 
     LaunchedEffect(serviceId) {
         viewModel.fetchProfessionalId(serviceId)
     }
 
+    LaunchedEffect(message) {
+        if (message.startsWith("Sucesso")) {
+            navController.popBackStack()
+        }
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Criar Avaliação") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
-                    }
-                }
+            com.connectdeaf.ui.components.TopAppBar(
+                showBackButton = true,
+                navController = navController
             )
         }
     ) { paddingValues ->
@@ -68,17 +70,30 @@ fun CreateAssessmentScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Avalie o serviço",
+                    text = "Avalie o serviço e o profissional",
                     style = MaterialTheme.typography.headlineSmall
                 )
 
                 OutlinedTextField(
                     value = text,
-                    onValueChange = { text = it },
-                    label = { Text("Comentário") },
-                    modifier = Modifier.fillMaxWidth()
+                    onValueChange = {
+                        text = it
+                        isError = it.length > 500 // Limita o comentário a 500 caracteres
+                    },
+                    label = { Text("Comentário (máximo 500 caracteres)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text
+                    ),
+                    isError = isError,
+                    supportingText = {
+                        if (isError) {
+                            Text("O comentário deve ter no máximo 500 caracteres.")
+                        }
+                    }
                 )
 
+                Text("Nota: $rating", style = MaterialTheme.typography.bodyMedium)
                 Slider(
                     value = rating.toFloat(),
                     onValueChange = { rating = it.toInt() },
@@ -86,7 +101,6 @@ fun CreateAssessmentScreen(
                     steps = 4,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text("Nota: $rating", style = MaterialTheme.typography.bodyMedium)
 
                 Button(
                     onClick = {
@@ -100,7 +114,7 @@ fun CreateAssessmentScreen(
                             )
                         }
                     },
-                    enabled = professionalId != null && text.isNotBlank() && rating > 0
+                    enabled = professionalId != null && text.isNotBlank() && rating > 0 && !isLoading
                 ) {
                     Text("Enviar Avaliação")
                 }
@@ -109,7 +123,11 @@ fun CreateAssessmentScreen(
                     Text(
                         text = message,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = if (message.startsWith("Sucesso")) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        }
                     )
                 }
             }
