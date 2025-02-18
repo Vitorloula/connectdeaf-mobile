@@ -25,8 +25,8 @@ fun SearchBarField(
 ) {
     OutlinedTextField(
         value = searchQuery,
-        onValueChange = {
-            onSearchQueryChange(it)
+        onValueChange = { newValue ->
+            onSearchQueryChange(newValue)
         },
         placeholder = { Text(text = placeholder, color = Color(0xFF999999)) },
         leadingIcon = {

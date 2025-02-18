@@ -7,6 +7,7 @@ import com.connectdeaf.network.services.AppointmentService
 import com.connectdeaf.network.services.AssessmentService
 import com.connectdeaf.network.services.DocumentApiService
 import com.connectdeaf.network.services.FAQApiService
+import com.connectdeaf.network.services.IBGEService
 import com.connectdeaf.network.services.PaymentService
 import com.connectdeaf.network.services.ProfessionalService
 import com.connectdeaf.network.services.ServiceService
@@ -21,15 +22,11 @@ class ApiServiceFactory(context: Context) {
         authRepository.getAuthToken()
     }
 
-    private val sharedRetrofit: Retrofit = RetrofitInstance.createRetrofit(
-        "https://connectdeaf-backend-dev.azurewebsites.net/",
-        getToken
-    )
+    private val sharedRetrofit: Retrofit = RetrofitInstance.createRetrofit("https://connectdeaf-backend-dev.azurewebsites.net/", getToken)
 
-    private val aiRetrofit: Retrofit = RetrofitInstance.createRetrofit(
-        "https://webapp-connectdeaf-dev.azurewebsites.net/",
-        getToken
-    )
+    private val ibgeRetrofit: Retrofit = RetrofitInstance.createRetrofit("https://servicodados.ibge.gov.br/api/v1/", getToken)
+
+    private val aiRetrofit: Retrofit = RetrofitInstance.createRetrofit("https://webapp-connectdeaf-dev.azurewebsites.net/", getToken)
 
     val apiService: ApiService by lazy {
         sharedRetrofit.create(ApiService::class.java)
@@ -49,6 +46,10 @@ class ApiServiceFactory(context: Context) {
 
     val serviceService: ServiceService by lazy {
         sharedRetrofit.create(ServiceService::class.java)
+    }
+
+    val ibgeService: IBGEService by lazy {
+        ibgeRetrofit.create(IBGEService::class.java)
     }
 
     val faqApiService: FAQApiService by lazy {

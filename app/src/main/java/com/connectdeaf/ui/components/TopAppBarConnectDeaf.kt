@@ -63,7 +63,7 @@ fun TopAppBar(
 
                             Handler(Looper.getMainLooper()).postDelayed({
                                 isButtonEnabled = true
-                            }, 500)
+                            }, 1000)
 
                         }
                     },

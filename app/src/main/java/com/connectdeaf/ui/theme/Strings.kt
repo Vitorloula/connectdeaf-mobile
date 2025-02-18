@@ -17,4 +17,6 @@ object AppStrings {
     const val DESCRIPTION_SERVICE = "Descrição"
     const val CATEGORY_SERVICE = "Categoria"
     const val NAME_SERVICE = "Nome do serviço"
+    const val STATE = "Estado"
+    const val CITY = "Cidade"
 }

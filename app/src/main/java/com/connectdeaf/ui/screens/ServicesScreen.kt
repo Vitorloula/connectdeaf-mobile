@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,19 +32,23 @@ fun ServicesScreen(
     navController: NavController,
     drawerViewModel: DrawerViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
-
     val context = LocalContext.current
     val viewModel: ServicesViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
         factory = ServicesViewModelFactory(context)
     )
 
     val isLoading = viewModel.isLoading.value
-    val serviceList = viewModel.getPaginatedList()
     val searchQuery = viewModel.searchQuery.value
+    val serviceList = viewModel.getPaginatedList()
+    val selectedState = viewModel.selectedState.value
+    val selectedCity = viewModel.selectedCity.value
 
     val CustomBlue = Color(0xFF3D66CC)
-
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadStatesFromIBGE(context = context)
+    }
 
     DrawerMenu(
         navController = navController,
@@ -58,7 +65,6 @@ fun ServicesScreen(
                 )
             }
         ) { paddingValues ->
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -95,8 +101,10 @@ fun ServicesScreen(
                 } else {
                     // Search Bar
                     SearchBarField(
-                        searchQuery = TextFieldValue(searchQuery),
-                        onSearchQueryChange = { viewModel.onSearchQueryChange(it.text) },
+                        searchQuery = viewModel.searchQuery.collectAsState().value, // Passa o TextFieldValue completo
+                        onSearchQueryChange = { newValue ->
+                            viewModel.onSearchQueryChange(newValue) // Atualiza o TextFieldValue completo no ViewModel
+                        },
                         placeholder = "Pesquisar por serviço...",
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
@@ -109,17 +117,22 @@ fun ServicesScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         DropdownMenuField(
-                            value = viewModel.selectedState.value,
+                            value = selectedState,
                             label = AppStrings.ESTADO,
-                            onValueChange = { selectedState -> viewModel.updateState(selectedState) },
-                            options = listOf("São Paulo", "Rio de Janeiro", "Bahia"),
+                            onValueChange = { newState ->
+                                viewModel.updateState(newState)
+                                viewModel.updateCity("") // Limpar a cidade ao selecionar um novo estado
+                                viewModel.loadCitiesForStateFromIBGE(newState, context) // Carregar as cidades ao selecionar o estado
+                            },
+                            options = viewModel.states,
                             modifier = Modifier.weight(1f)
                         )
+
                         DropdownMenuField(
-                            value = viewModel.selectedCity.value,
+                            value = selectedCity,
                             label = AppStrings.CIDADE,
-                            onValueChange = { selectedCity -> viewModel.updateCity(selectedCity) },
-                            options = listOf("Campinas", "Niterói", "Salvador"),
+                            onValueChange = { viewModel.updateCity(it) },
+                            options = viewModel.cities,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -139,6 +152,39 @@ fun ServicesScreen(
                                 image = null,
                                 value = service.value,
                                 onClick = { navController.navigate("service/${service.id}") }
+                            )
+                        }
+                    }
+
+                    // Paginação
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = { viewModel.previousPage() },
+                            enabled = viewModel.currentPage.value > 0
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Página anterior"
+                            )
+                        }
+                        Text(
+                            text = "Página ${viewModel.currentPage.value + 1}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                        IconButton(
+                            onClick = { viewModel.nextPage() },
+                            enabled = (viewModel.currentPage.value + 1) * viewModel.servicesPerPage < viewModel.filteredServiceList.size
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "Próxima página"
                             )
                         }
                     }

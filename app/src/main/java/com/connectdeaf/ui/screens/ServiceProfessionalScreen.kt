@@ -22,15 +22,19 @@ import androidx.navigation.NavController
 import com.connectdeaf.R
 import com.connectdeaf.data.repository.AuthRepository
 import com.connectdeaf.data.repository.ServicesRepository
+import com.connectdeaf.ui.components.DrawerMenu
 import com.connectdeaf.ui.components.ServiceCard
 import com.connectdeaf.ui.theme.PrimaryColor
+import com.connectdeaf.viewmodel.DrawerViewModel
 import com.connectdeaf.viewmodel.ServiceProfessionalViewModel
 import com.connectdeaf.viewmodel.factory.ServicesByProfessionalViewModelFactory
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun ServiceProfessionalScreen(
-    navController: NavController
+    navController: NavController,
+    drawerViewModel: DrawerViewModel
 ) {
     val context = LocalContext.current
     val servicesRepository = ServicesRepository(context.applicationContext)
@@ -44,115 +48,147 @@ fun ServiceProfessionalScreen(
     var serviceToDelete by remember { mutableStateOf<String?>(null) }
     val idProfessional = AuthRepository(context).getProfessionalId() ?: ""
 
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(idProfessional) {
         servicesProfessionalViewModel.getServicesByProfessional(idProfessional, context)
     }
 
-    Scaffold(
-        topBar = {
-            com.connectdeaf.ui.components.TopAppBar(
-                showBackButton = true,
-                navController = navController
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            Column(
+    DrawerMenu(
+        navController = navController,
+        scope = scope,
+        drawerViewModel = drawerViewModel
+    ) {
+        Scaffold(
+            topBar = {
+                com.connectdeaf.ui.components.TopAppBar(
+                    onOpenDrawerMenu = { scope.launch { drawerViewModel.openMenuDrawer() } },
+                    onOpenDrawerNotifications = { scope.launch { drawerViewModel.openNotificationsDrawer() } },
+                    showBackButton = false,
+                    navController = navController
+                )
+            }
+        ) { paddingValues ->
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(paddingValues)
             ) {
-                Text(
-                    text = "Serviços",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                OutlinedButton(
-                    onClick = { navController.navigate("registerServiceScreen") },
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryColor,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(6.dp)
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    Text(
+                        text = "Serviços",
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    OutlinedButton(
+                        onClick = { navController.navigate("registerServiceScreen") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PrimaryColor,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Adicionar Serviço",
+                                tint = Color.White
+                            )
+                            Text(
+                                "Adicionar Serviço",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentPadding = PaddingValues(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Adicionar Serviço",
-                            tint = Color.White
-                        )
-                        Text("Adicionar Serviço", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        items(uiState.services) { service ->
+                            ServiceCard(
+                                id = service.id.toString(),
+                                name = service.name,
+                                description = service.description,
+                                image = R.drawable.doutor.toString(),
+                                value = service.value,
+                                isProfessional = true,
+                                onClick = { navController.navigate("service/${service.id}") },
+                                onDeleteClick = { serviceId -> serviceToDelete = serviceId }
+                            )
+                        }
                     }
                 }
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentPadding = PaddingValues(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(uiState.services) { service ->
-                        ServiceCard(
-                            id = service.id.toString(),
-                            name = service.name,
-                            description = service.description,
-                            image = R.drawable.doutor.toString(),
-                            value = service.value,
-                            isProfessional = true,
-                            onClick = { navController.navigate("service/${service.id}")},
-                            onDeleteClick = { serviceId -> serviceToDelete = serviceId }
-                        )
-                    }
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(50.dp),
+                        color = PrimaryColor
+                    )
                 }
             }
 
-            if (uiState.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(50.dp),
-                    color = PrimaryColor
+            // Confirmação de exclusão do serviço
+            serviceToDelete?.let { id ->
+                AlertDialog(
+                    onDismissRequest = { serviceToDelete = null },
+                    title = { Text("Confirmar exclusão") },
+                    text = { Text("Tem certeza que deseja excluir este serviço?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            servicesProfessionalViewModel.deleteService(
+                                id,
+                                context = context,
+                                onSuccess = {
+                                    // Ação a ser executada após a exclusão bem-sucedida
+                                    Toast.makeText(
+                                        context,
+                                        "Serviço excluído com sucesso!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    serviceToDelete = null
+                                },
+                                onError = {
+                                    // Ação a ser executada após a exclusão bem-sucedida
+                                    Toast.makeText(
+                                        context,
+                                        "Erro ao excluir serviço.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    serviceToDelete = null
+                                }
+                            )
+                        }) {
+                            Text("Excluir", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { serviceToDelete = null }) {
+                            Text("Cancelar")
+                        }
+                    }
                 )
             }
-        }
-
-        // Confirmação de exclusão do serviço
-        serviceToDelete?.let { id ->
-            AlertDialog(
-                onDismissRequest = { serviceToDelete = null },
-                title = { Text("Confirmar exclusão") },
-                text = { Text("Tem certeza que deseja excluir este serviço?") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        servicesProfessionalViewModel.deleteService(id, context)
-                        Toast.makeText(context, "Serviço excluído com sucesso!", Toast.LENGTH_SHORT)
-                            .show()
-                        serviceToDelete = null
-                    }) {
-                        Text("Excluir", color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { serviceToDelete = null }) {
-                        Text("Cancelar")
-                    }
-                }
-            )
         }
     }
 }

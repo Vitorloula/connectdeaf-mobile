@@ -1,5 +1,6 @@
 package com.connectdeaf.ui.components
 
+import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -79,7 +80,7 @@ fun ScheduleCard(
             }
 
             if (role == "[ROLE_USER]") {
-                navController.navigate("service/${schedule.serviceId}")
+                navController.navigate("createAssessmentScreen/${schedule.serviceId}")
             }
         }
     ) {
@@ -95,7 +96,7 @@ fun ScheduleCard(
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                if (role == "[ROLE_USER]" && schedule.status == "Rejeitado" || schedule.status == "Pendente") {
+                if (schedule.status == "Rejeitado") {
                     IconButton(onClick = {
                         actionType = "delete"
                         showConfirmationDialog = true
@@ -107,7 +108,7 @@ fun ScheduleCard(
                             tint = Color.Black
                         )
                     }
-                } else {
+                } else if (schedule.status == "Aprovado") {
                     IconButton(onClick = {
                         notificationViewModel.sendNotification(context, notificationViewModel.createNotification(
                             schedule
@@ -119,6 +120,23 @@ fun ScheduleCard(
                             tint = Color.Black
                         )
                     }
+                } else {
+                    IconButton(onClick = {
+                        if (role == "[ROLE_PROFESSIONAL]") {
+                            Toast.makeText(context, "Aceite ou Rejeite o pedido antes de marca um lembrete", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Aguarde a confirmação para marcar um lembrete", Toast.LENGTH_SHORT).show()
+
+                        }
+
+
+                    }, modifier = Modifier.size(20.dp)) {
+                        Icon(
+                            imageVector = Icons.Sharp.Notifications,
+                            contentDescription = "Notifications Icon",
+                            tint = Color.Black,
+                        )
+                    }
                 }
             }
 
@@ -127,7 +145,6 @@ fun ScheduleCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Cliente e Data do Agendamento
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
@@ -166,7 +183,6 @@ fun ScheduleCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Status do Agendamento
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
@@ -218,7 +234,6 @@ fun ScheduleCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Nome do Profissional
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
@@ -239,7 +254,6 @@ fun ScheduleCard(
                     )
                 }
 
-                // Endereço do Cliente (se houver)
                 schedule.address.let {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -258,7 +272,6 @@ fun ScheduleCard(
                 }
             }
 
-            // Seção expansível com detalhes adicionais
             if (expanded) {
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -377,8 +390,3 @@ fun ScheduleCard(
         )
     }
 }
-
-
-
-
-
