@@ -2,6 +2,7 @@ package com.connectdeaf.ui.screens
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -25,6 +25,10 @@ import com.connectdeaf.ui.components.AssessmentCard
 import com.connectdeaf.viewmodel.DrawerViewModel
 import com.connectdeaf.viewmodel.ServiceViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun ServiceScreen(
@@ -82,21 +86,47 @@ fun ServiceScreen(
                 )
 
                 SectionCardService(title = "Avaliações sobre o serviço") {
-                    Row(
-                        modifier = Modifier.horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        assessmentState.value?.forEach { assessment ->
-                            AssessmentCard(
-                                name = assessment.userName,
-                                stars = assessment.rating,
-                                description = assessment.text
+                    when {
+                        assessmentState.value == null -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(100.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+
+                        assessmentState.value!!.isEmpty() -> {
+                            Text(
+                                text = "Ainda não há avaliações.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
+                        }
+
+                        else -> {
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(assessmentState.value!!) { assessment ->
+                                    AssessmentCard(
+                                        name = assessment.userName,
+                                        stars = assessment.rating,
+                                        description = assessment.text,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
-        } ?: CircularProgressIndicator()
+        }
     }
 }
 
@@ -109,9 +139,9 @@ fun CardProfile(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)
     ) {
         Row(
             modifier = Modifier
@@ -120,36 +150,45 @@ fun CardProfile(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Image(
-                painter = if (imageUrl.isNullOrEmpty()) painterResource(id = R.drawable.ic_user_placeholder)
-                else rememberAsyncImagePainter(model = imageUrl),
-                contentDescription = "Avatar",
+            Box(
                 modifier = Modifier
-                    .size(64.dp)
-                    .background(Color.Gray, CircleShape)
-                    .padding(8.dp)
-            )
+                    .size(72.dp)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
+                    .border(2.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape) // Borda colorida
+                    .padding(4.dp)
+            ) {
+                Image(
+                    painter = if (imageUrl.isNullOrEmpty()) painterResource(id = R.drawable.ic_user_placeholder)
+                    else rememberAsyncImagePainter(model = imageUrl),
+                    contentDescription = "Avatar",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Column(
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp), // Espaçamento reduzido
             ) {
                 Text(
                     text = name,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold), // Texto em negrito
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = "$city - $state",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant), // Cor mais suave
                 )
-                Text(text = description, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant), // Cor mais suave
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
-
         }
     }
 }
@@ -163,49 +202,65 @@ fun CardDetailService(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter("https://picsum.photos/800/600"),
-                contentDescription = "Service Image",
-                contentScale = ContentScale.Crop,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-            )
+                    .clip(RoundedCornerShape(12.dp)) // Bordas arredondadas para a imagem
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter("https://picsum.photos/800/600"),
+                    contentDescription = "Service Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)))) // Overlay escuro
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(color = Color.White),
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp)
+                )
+            }
 
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 category.forEach { ChipService(label = it) }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(text = "Sobre esse serviço:", style = MaterialTheme.typography.bodyLarge)
-                Text(text = description, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = "Sobre esse serviço:",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                )
             }
 
-            Row(
+            Button(
+                onClick = { navController.navigate("appointmentScreen/${serviceId}/${professionalId}/${value}") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            )
-
-            {
-                Button(
-                    onClick = { navController.navigate("appointmentScreen/${serviceId}/${professionalId}/${value}") },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(Icons.Default.DateRange, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Agendar")
-                }
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary) // Cor destacada
+            ) {
+                Icon(Icons.Default.DateRange, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Agendar", style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
@@ -215,12 +270,23 @@ fun CardDetailService(
 fun SectionCardService(title: String, content: @Composable () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(
+                    painter = painterResource(id = R.drawable.star_filled_icon),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold) // Texto em negrito
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             content()
         }
     }
@@ -230,9 +296,13 @@ fun SectionCardService(title: String, content: @Composable () -> Unit) {
 fun ChipService(label: String) {
     Box(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
-            .padding(8.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest, RoundedCornerShape(50))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
-        Text(text = label, color = Color.White, style = MaterialTheme.typography.bodySmall)
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }
