@@ -5,7 +5,9 @@ data class Service(
     val name: String,
     val description: String,
     val value: Double,
-    val professional: ProfessionalService // Inclui o objeto profissional
+    val professional: ProfessionalService, // Inclui o objeto profissional
+    val state: String,
+    val city: String
 )
 
 data class ProfessionalService(
