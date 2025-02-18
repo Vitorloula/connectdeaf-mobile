@@ -196,7 +196,6 @@ fun ChatListScreen(
     DrawerMenu(
         navController = navController,
         scope = scope,
-        gesturesEnabled = false,
         drawerViewModel = drawerViewModel
     ) {
         Scaffold(
