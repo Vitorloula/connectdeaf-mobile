@@ -21,8 +21,7 @@ class ApiServiceFactory(context: Context) {
         authRepository.getAuthToken()
     }
 
-//    private val sharedRetrofit: Retrofit = RetrofitInstance.createRetrofit("https://connectdeaf-backend-dev.azurewebsites.net/", getToken)
-    private val sharedRetrofit: Retrofit = RetrofitInstance.createRetrofit("http://192.168.0.18:8080/", getToken)
+    private val sharedRetrofit: Retrofit = RetrofitInstance.createRetrofit("https://connectdeaf-backend-dev.azurewebsites.net/", getToken)
 
     private val ibgeRetrofit: Retrofit = RetrofitInstance.createRetrofit("https://servicodados.ibge.gov.br/api/v1/", getToken)
 
