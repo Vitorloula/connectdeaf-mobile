@@ -1,18 +1,41 @@
 package com.connectdeaf.ui.screens
 
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,20 +69,26 @@ fun ProfileScreen(
     navController: NavController,
     drawerViewModel: DrawerViewModel = viewModel()
 ) {
+    // Observa o perfil
     val profileState = viewModel.profile.collectAsState()
+    // Observa os agendamentos (caso profissional)
     val appointments = viewModel.appointments.collectAsState().value
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
+    // Observa o estado do documento (upload/verificação)
+    val documentState by viewModel.documentState.collectAsState()
 
+    // Contexto e escopo de corrotina
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Repositório de auth (para saber se é cliente ou profissional)
     val authRepository = AuthRepository(context)
     val role = authRepository.getRoles()?.firstOrNull() ?: ""
     val userId = authRepository.getUserId() ?: ""
     val professionalId = authRepository.getProfessionalId() ?: ""
 
-    Log.d("ROLE", "${role}")
+    Log.d("ROLE", "$role")
 
-
-    // Chama o fetch com userId e role
+    // Busca os dados de perfil ao montar a tela
     LaunchedEffect(userId, role) {
         if (role == "ROLE_PROFESSIONAL") {
             viewModel.fetchProfile(professionalId, role, context)
@@ -69,6 +98,7 @@ fun ProfileScreen(
         }
     }
 
+    // Menu lateral e Notifications
     DrawerMenu(
         navController = navController,
         scope = scope,
@@ -94,8 +124,9 @@ fun ProfileScreen(
                     .background(MaterialTheme.colorScheme.background),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Título da tela (varia de acordo com o tipo de usuário)
-                val profileTitle = if (role == "ROLE_PROFESSIONAL") "Perfil do profissional" else "Perfil do cliente"
+                // Título da tela
+                val profileTitle =
+                    if (role == "ROLE_PROFESSIONAL") "Perfil do profissional" else "Perfil do cliente"
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -108,7 +139,7 @@ fun ProfileScreen(
                     )
                 }
 
-                // Header (Avatar + Nome + Localização)
+                // ==================== HEADER ====================
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp),
@@ -119,7 +150,7 @@ fun ProfileScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-
+                        // Foto de perfil (ou placeholder)
                         AsyncImage(
                             model = profileState.value?.imageUrl,
                             contentDescription = "Profile Picture",
@@ -128,34 +159,49 @@ fun ProfileScreen(
                                 .clip(CircleShape)
                                 .background(Color.Gray)
                         )
+
                         Spacer(modifier = Modifier.width(16.dp))
+
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            if(role == "ROLE_PROFESSIONAL"){
-                                profileState.value?.name.let {
-                                    if (it != null) {
+                            // Nome
+                            if (role == "ROLE_PROFESSIONAL") {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    profileState.value?.name?.let {
                                         Text(
                                             text = it,
                                             style = MaterialTheme.typography.titleLarge,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+
+                                    if (documentState.isVerified) {
+                                        Spacer(modifier = Modifier.width(4.dp)) // Pequeno espaçamento entre nome e selo
+
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = "Selo de verificação",
+                                            tint = Color.Blue, // Cor azul para destacar
+                                            modifier = Modifier.size(24.dp) // Ajuste do tamanho do selo
                                         )
                                     }
                                 }
-                            }else{
-                                profileState.value?.user?.name.let {
-                                    if (it != null) {
-                                        Text(
-                                            text = it,
-                                            style = MaterialTheme.typography.titleLarge,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
+                            } else {
+                                profileState.value?.user?.name?.let {
+                                    Text(
+                                        text = it,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                 }
                             }
 
+                            // Localização
                             Row {
                                 Image(
                                     painter = painterResource(id = R.drawable.location_icon),
@@ -163,21 +209,28 @@ fun ProfileScreen(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                if(role == "ROLE_PROFESSIONAL"){
+                                if (role == "ROLE_PROFESSIONAL") {
+                                    val address = profileState.value?.addresses?.firstOrNull()
+                                    val city = address?.city ?: ""
+                                    val state = address?.state ?: ""
                                     Text(
-                                        text = "${profileState.value?.addresses?.first()?.city}, ${profileState.value?.addresses?.first()?.state}",
+                                        text = "$city, $state",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = Color.Blue
                                     )
-                                }else{
+                                } else {
+                                    val address = profileState.value?.user?.addresses?.firstOrNull()
+                                    val city = address?.city ?: ""
+                                    val state = address?.state ?: ""
                                     Text(
-                                        text = "${profileState.value?.user?.addresses?.first()?.city}, ${profileState.value?.user?.addresses?.first()?.state}",
+                                        text = "$city, $state",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = Color.Blue
                                     )
                                 }
-
                             }
+
+                            // Número de avaliações
                             Row {
                                 Image(
                                     painter = painterResource(id = R.drawable.star_filled_icon),
@@ -185,7 +238,8 @@ fun ProfileScreen(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
-                                    text = " ${profileState.value?.assessments?.size} (${profileState.value?.assessments?.size} avaliações)",
+                                    text = " ${profileState.value?.assessments?.size ?: 0} " +
+                                            "(${profileState.value?.assessments?.size ?: 0} avaliações)",
                                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
                                     color = Color.Gray
                                 )
@@ -194,7 +248,7 @@ fun ProfileScreen(
                     }
                 }
 
-                // "Mais sobre mim"
+                // ==================== "MAIS SOBRE MIM" ====================
                 SectionCard(title = "Mais sobre mim") {
                     profileState.value?.description?.let {
                         Text(
@@ -205,15 +259,15 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // "Minhas habilidades" exibido apenas para profissionais
-                    if (role == "ROLE_PROFESSIONAL" && profileState.value?.category?.isNotEmpty() == true) {
+                    // Se for profissional, mostra habilidades
+                    if (role == "ROLE_PROFESSIONAL" && !profileState.value?.category.isNullOrEmpty()) {
                         Column {
                             Text(
                                 text = "Minhas habilidades",
                                 style = MaterialTheme.typography.titleMedium
                             )
                             var currentRowItems = mutableListOf<String>()
-                            profileState.value?.category!!.forEachIndexed { index, skill ->
+                            profileState.value?.category?.forEachIndexed { index, skill ->
                                 currentRowItems.add(skill)
                                 if (currentRowItems.size == 3 || index == profileState.value?.category!!.lastIndex) {
                                     Row(
@@ -232,8 +286,9 @@ fun ProfileScreen(
                     }
                 }
 
-                // Seção de "Serviços e avaliações" para profissional ou apenas "Avaliações" para cliente
-                val servicesAndAssessmentsTitle = if (role == "ROLE_PROFESSIONAL") "Serviços e avaliações" else "Avaliações"
+                // ==================== "SERVIÇOS E AVALIAÇÕES" ====================
+                val servicesAndAssessmentsTitle =
+                    if (role == "ROLE_PROFESSIONAL") "Serviços e avaliações" else "Avaliações"
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -245,12 +300,12 @@ fun ProfileScreen(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                // Exibe os serviços apenas para profissionais
+
+                // Mostra serviços apenas se for profissional
                 if (role == "ROLE_PROFESSIONAL") {
-                    if (profileState.value?.services?.isNotEmpty() == true) {
+                    if (!profileState.value?.services.isNullOrEmpty()) {
                         Row(
-                            modifier = Modifier
-                                .horizontalScroll(rememberScrollState()),
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             profileState.value?.services!!.forEach { service ->
@@ -274,13 +329,14 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Gráfico de desempenho se for profissional
                 if (role == "ROLE_PROFESSIONAL") {
-                    // Gráfico de desempenho
                     MonthlyRevenueChart(appointments = appointments)
                 }
-                // Avaliações (o título muda conforme o tipo de perfil)
+
+                // ==================== AVALIAÇÕES ====================
                 SectionCard(title = if (role == "ROLE_PROFESSIONAL") "Avaliações sobre o profissional" else "Avaliações") {
-                    if (profileState.value?.assessments?.isNotEmpty() == true) {
+                    if (!profileState.value?.assessments.isNullOrEmpty()) {
                         Row {
                             Image(
                                 painter = painterResource(id = R.drawable.star_filled_icon),
@@ -288,15 +344,15 @@ fun ProfileScreen(
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = " ${profileState.value?.assessments!!.size} (${profileState.value?.assessments!!.size} avaliações)",
+                                text = " ${profileState.value?.assessments!!.size} " +
+                                        "(${profileState.value?.assessments!!.size} avaliações)",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
                                 color = Color.Gray
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(
-                            modifier = Modifier
-                                .horizontalScroll(rememberScrollState()),
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             profileState.value?.assessments!!.forEach { assessment ->
@@ -314,6 +370,86 @@ fun ProfileScreen(
                         )
                     }
                 }
+
+                // ==================== CERTIFICADO (PARA PROFISSIONAIS) ====================
+                if (role == "ROLE_PROFESSIONAL") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SectionCard(title = "Certificado do Profissional") {
+                        // Lançador de arquivos
+                        val filePickerLauncher = rememberLauncherForActivityResult(
+                            contract = ActivityResultContracts.GetContent()
+                        ) { uri: Uri? ->
+                            if (uri != null) {
+                                viewModel.uploadAndVerifyCertificate(context, uri)
+                            }
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Feedback visual sobre o status do certificado
+                            if (documentState.isVerified) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                )
+                                {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = "Certificado verificado",
+                                        tint = Color.Green,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Text(
+                                        text = "Certificado verificado",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Green
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = "Nenhum certificado carregado",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Gray
+                                )
+                            }
+
+                            // Botão de upload
+                            Button(
+                                onClick = { filePickerLauncher.launch("*/*") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                )
+                                {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_upload),
+                                        contentDescription = "Ícone de upload",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Text(
+                                        text = "Adicionar Certificado",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -327,9 +463,7 @@ fun SectionCard(title: String, content: @Composable () -> Unit) {
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium
@@ -339,8 +473,8 @@ fun SectionCard(title: String, content: @Composable () -> Unit) {
     }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 fun PreviewProfileScreen() {
     ConnectDeafTheme {
         ProfileScreen(
