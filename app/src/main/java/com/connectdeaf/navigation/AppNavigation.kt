@@ -18,6 +18,7 @@ import com.connectdeaf.ui.screens.RegisterProfessionalScreen
 import com.connectdeaf.ui.screens.RegisterScreen
 import com.connectdeaf.ui.screens.ScheduleScreen
 import com.connectdeaf.ui.screens.AppointmentScreen
+import com.connectdeaf.ui.screens.CreateAssessmentScreen
 import com.connectdeaf.ui.screens.RegisterServiceScreen
 import com.connectdeaf.ui.screens.ServiceProfessionalScreen
 import com.connectdeaf.ui.screens.ServiceScreen
@@ -100,7 +101,18 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-
+        composable(
+            route = "createAssessmentScreen/{serviceId}",
+            arguments = listOf(
+                navArgument("serviceId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val serviceId = backStackEntry.arguments?.getString("serviceId").orEmpty()
+            CreateAssessmentScreen(navController = navController, serviceId = serviceId)
+        }
 
         composable("chatList") { ChatListScreen(navController) }
         composable(

@@ -80,7 +80,7 @@ fun ScheduleCard(
             }
 
             if (role == "[ROLE_USER]") {
-                navController.navigate("service/${schedule.serviceId}")
+                navController.navigate("createAssessmentScreen/${schedule.serviceId}")
             }
         }
     ) {
@@ -145,7 +145,6 @@ fun ScheduleCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Cliente e Data do Agendamento
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
@@ -184,7 +183,6 @@ fun ScheduleCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Status do Agendamento
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
@@ -236,7 +234,6 @@ fun ScheduleCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Nome do Profissional
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
@@ -257,7 +254,6 @@ fun ScheduleCard(
                     )
                 }
 
-                // Endereço do Cliente (se houver)
                 schedule.address.let {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -276,7 +272,6 @@ fun ScheduleCard(
                 }
             }
 
-            // Seção expansível com detalhes adicionais
             if (expanded) {
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -395,8 +390,3 @@ fun ScheduleCard(
         )
     }
 }
-
-
-
-
-
