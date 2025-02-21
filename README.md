@@ -7,6 +7,7 @@ Uma plataforma web que conecta deficientes auditivos a profissionais capacitados
 - [Luís Estevam Rosa Chaves](https://github.com/Estevam1to) - Estevam1to
 - [Luís Fernando Batista Lima](https://github.com/oFernandoLima) - oFernandoLima
 - [Kairo Matheus Sales Barbosa](https://github.com/kairosb) - kairosb
+- [Vitor Loula Silva](https://github.com/Vitorloula) - VitorLoula
 
 ## Dados do Projeto
 
